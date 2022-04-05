@@ -28,10 +28,10 @@ createmanifest: javacbuild
 createjar: createmanifest
 	@echo "Creating jar"
 	@jar cfm src/build/ConnectM.jar src/myManifest -C src/build/classes/ .
-	@cp src/build/ConnectM.jar ConnectM.jar
+	@cp src/build/ConnectM.jar DigDug.jar
 
 generate: createjar
-	@echo "Complete: Run make run to execute a standard Connect 4 game"
+	@echo "Complete: Run "
 
 run: generate
 	@java -jar ConnectM.jar 10 4 1
