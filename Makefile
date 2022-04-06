@@ -3,10 +3,7 @@
 SOURCE_DIR := src
 BUILD_DIR := src/build
 CLASSES_OUTPUT := src/build/classes
-PACKAGE_OUTPUT := src/package
-
-package:
-	@mkdir -p $(PACKAGE_OUTPUT)
+JAVA_FILES := $(find . -name '*.java')
 
 classpath:
 	@mkdir -p $(CLASSES_OUTPUT)
@@ -14,12 +11,9 @@ classpath:
 buildpath:
 	@mkdir -p $(BUILD_DIR)
 
-copyfiles:
-	@cp src/*.java $(PACKAGE_OUTPUT)
-
-javacbuild: package classpath buildpath copyfiles
+javacbuild: classpath buildpath
 	@echo "Creating classes"
-	@javac -sourcepath src -d $(CLASSES_OUTPUT) $(PACKAGE_OUTPUT)/*.java
+	@javac -sourcepath src -d $(CLASSES_OUTPUT) $(SOURCE_DIR)/**/*.java $(SOURCE_DIR)/*.java
 
 createmanifest: javacbuild
 	@echo "Writing manifest"
@@ -27,8 +21,8 @@ createmanifest: javacbuild
 
 createjar: createmanifest
 	@echo "Creating jar"
-	@jar cfm src/build/ConnectM.jar src/myManifest -C src/build/classes/ .
-	@cp src/build/ConnectM.jar DigDug.jar
+	@jar cfm src/build/DigDug.jar src/myManifest -C src/build/classes/ .
+	@cp src/build/DigDug.jar DigDug.jar
 
 generate: createjar
 	@echo "Complete: Run "
@@ -40,6 +34,5 @@ clean:
 	@echo "Cleaning up..."
 	@rm -r src/build/classes
 	@rm src/myManifest
-	@rm -r src/package
 	@rm ./*.jar
 	

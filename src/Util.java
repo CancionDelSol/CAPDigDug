@@ -8,14 +8,14 @@ public class Util {
     public static String FormatDouble(double x, int places) {
         DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(places);
-        return df.format(decimalNumber);
+        return df.format(x);
     }
 
     public static boolean IsNearZero (double a) {
-        return (Math.Abs(a) < Values.Epsilon);
+        return (Math.abs(a) < Values.Epsilon);
     }
 
-    public static Sig(double x) {
+    public static double Sig(double x) {
         return 1.0/(1.0 + Math.exp(-x));
     }
 }

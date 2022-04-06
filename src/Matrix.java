@@ -25,11 +25,11 @@ public class Matrix {
      * Multiply two matricies
      * Return null on incompatible matricies
      */
-    public static Matrix Multiply(Matrix a, Matrix b) {
+    public static Matrix Multiply(Matrix a, Matrix b) throws Exception {
         
         // Dimension mismatch
         if (a.Nx != b.Ny)
-            return null;
+            throw new Exception("Mismatched Dimensions in Multiply");
 
         // Result matrix
         Matrix res = new Matrix(a.Nx, b.Ny);
@@ -58,11 +58,11 @@ public class Matrix {
      * Add two matricies
      * Return null for incompatible matricies
      */
-    public static Matrix Add(Matrix a, Matrix b) {
+    public static Matrix Add(Matrix a, Matrix b) throws Exception {
 
         // Dimension mismatch
         if (a.Nx != b.Nx || a.Ny != b.Ny)
-            return null;
+            throw new Exception("Mismatched Dimensions in Add");
 
         Matrix res = new Matrix(a.Nx, b.Nx);
 
@@ -85,11 +85,11 @@ public class Matrix {
      * Subtrace two matricies
      * Return null for incompatible matricies
      */
-    public static Matrix Subtract(Matrix a, Matrix b) {
+    public static Matrix Subtract(Matrix a, Matrix b) throws Exception {
 
         // Dimension mismatch
         if (a.Nx != b.Nx || a.Ny != b.Ny)
-            return null;
+            throw new Exception("Mismatched dimensions in Subtract");
 
         Matrix res = new Matrix(a.Nx, b.Nx);
 
@@ -113,9 +113,9 @@ public class Matrix {
     /**
      * Retrieve value at index
      */
-    public double get(int x, int y) {
-        if (!_inBounds)
-            return double.NaN;
+    public double get(int x, int y) throws Exception {
+        if (!_inBounds(x, y))
+            throw new Exception("Out of bounds");
         
         return _values[y * Nx + x];
     }
@@ -123,9 +123,9 @@ public class Matrix {
     /**
      * Put value at index
      */
-     public void put(int x, int y, double value) {
-         if (!_inBounds || value == double.NaN)
-            return;
+     public void put(int x, int y, double value) throws Exception {
+         if (!_inBounds(x, y))
+            throw new Exception("Out of bounds");
 
         _values[y * Nx + x] = value;
      }
