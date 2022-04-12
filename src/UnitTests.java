@@ -48,10 +48,12 @@ public class UnitTests {
         Matrix actual = Matrix.Multiply(m1, m2);
 
         // Test res dimensions
-        if (actual.Nx != 3) {
-            LogResult(testName, false, "Incorrect dimension " + String.valueOf(actual.Nx));
+        if (actual.Nx != 3 || actual.Ny != 3) {
+            LogResult(testName, false, "Incorrect dimension " + String.valueOf(actual.Nx) + " " + String.valueOf(actual.Ny));
+            return;
         }
 
+        LogResult(testName, true, "");
 
     }
 
@@ -82,7 +84,7 @@ public class UnitTests {
     //region Private
     private static void LogResult(String testName, boolean testPassed, String message) {
         if (testPassed) {
-            System.out.println(testName + " FAILED : " + message);
+            System.out.println(testName + " PASSED : " + message);
         } else {
             System.out.println(testName + " FAILED : " + message);
         }

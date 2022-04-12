@@ -9,7 +9,18 @@ public class Matrix {
     //endregion
 
     //region Constructor
-    public Matrix(int nx, int ny) {
+    public Matrix(int nx, int ny, double[] initialValues) throws Exception {
+        this(nx, ny);
+        for (int i = 0; i < initialValues.length; i++) {
+            _values[i] = initialValues[i];
+        }
+    }
+
+    /**
+     * Create an empty matrix with nx by ny
+     *  dimensions
+     */
+    public Matrix(int nx, int ny) throws Exception{
 
         // Save dimensions
         Nx = nx;
@@ -131,7 +142,14 @@ public class Matrix {
      }
     //endregion
 
-    //region
+    //region Object
+    @Override
+    public object clone() {
+        
+    }
+    //endregion
+
+    //region Private
     private boolean _inBounds(int x, int y) {
         if (x < 0 || x > Nx || y < 0 || y > Ny)
             return false;

@@ -25,10 +25,13 @@ createjar: createmanifest
 	@cp src/build/DigDug.jar DigDug.jar
 
 generate: createjar
-	@echo "Complete: Run "
+	@echo "Complete"
 
 run: generate
-	@java -jar ConnectM.jar 10 4 1
+	@java -jar DigDug.jar
+
+debug: generate
+	@java -jar DigDug.jar UNITTEST
 
 clean:
 	@echo "Cleaning up..."
