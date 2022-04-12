@@ -125,8 +125,7 @@ public class Matrix {
      * Retrieve value at index
      */
     public double get(int x, int y) throws Exception {
-        if (!_inBounds(x, y))
-            throw new Exception("Out of bounds");
+        _inBounds(x, y);
         
         return _values[y * Nx + x];
     }
@@ -135,9 +134,9 @@ public class Matrix {
      * Put value at index
      */
      public void put(int x, int y, double value) throws Exception {
-         if (!_inBounds(x, y))
-            throw new Exception("Out of bounds");
 
+        _inBounds(x, y)
+            
         _values[y * Nx + x] = value;
      }
     //endregion
@@ -145,14 +144,18 @@ public class Matrix {
     //region Object
     @Override
     public Object clone() {
-        return new Matrix(Nx, Ny, _values);
+        try {
+            return new Matrix(Nx, Ny, _values);
+        } catch (Exception exc) {
+            Logger.Error("Exception Matrix clone " + exc.getMessage());
+        }
     }
     //endregion
 
     //region Private
-    private boolean _inBounds(int x, int y) {
+    private boolean _inBounds(int x, int y) throws Exception {
         if (x < 0 || x > Nx || y < 0 || y > Ny)
-            return false;
+            throw new Exception("Out of bounds (" + x + ", " + y + ")");
         
         return true;
     }
