@@ -144,8 +144,8 @@ public class Matrix {
 
     //region Object
     @Override
-    public object clone() {
-        
+    public Object clone() {
+        return new Matrix(Nx, Ny, _values);
     }
     //endregion
 

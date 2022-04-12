@@ -28,5 +28,9 @@ public class Perceptron implements IPerceptron {
     public List<Matrix> getBiases() {
 
     }
+
+    public double[] FeedForward(double[] inputs) throws Exception {
+
+    }
     //endregion
 }
