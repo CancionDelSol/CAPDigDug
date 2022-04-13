@@ -2,11 +2,12 @@ import java.util.List;
 
 public interface IPerceptron {
     //region Properties
-    List<Matrix> getWeights();
-    List<Matrix> getBiases();
+    List<Matrix> getWeights() throws Exception;
+    List<Matrix> getBiases() throws Exception;
+    int[] getStructure() throws Exception;
     //endregion
 
     //region Methods
-    double[] FeedForward(double[] inputs);
+    double[] FeedForward(double[] inputs) throws Exception;
     //endregion
 }

@@ -16,8 +16,7 @@ public class Program {
 
         for (int i = 0; i < args.length; i++) {
             if (args[0].equals("UNITTEST")) {
-            System.out.println("HERE");
-
+                Logger.Gui("Running Unit tests");
                 RunUnitTests();
             }
         }
