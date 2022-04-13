@@ -1,0 +1,7 @@
+// Create a new thread
+new Thread(() -> someMethod()).start();
+
+// Using a method as an argument
+public T myMethod(Callable<T> func) {
+    return func.call();
+}
