@@ -4,6 +4,7 @@ public class UnitTests {
         MatrixMultiplicationTestOne();
         MatrixMultiplicationTestTwo();
         MatrixAdditionSubtractionTest();
+        PerceptronXmlSerializationTest();
     }
     //endregion
 
@@ -125,7 +126,22 @@ public class UnitTests {
     //endregion
 
     //region Perceptron
+    public static void PerceptronXmlSerializationTest() throws Exception {
+        String testName = "PerceptronXmlSerializationTest";
 
+        int[] testStructure = new int[] { 25, 75, 10, 100, 42, 69 };
+        IPerceptron perceptron = new Perceptron(testStructure);
+
+        String xmlOut = perceptron.WriteXml();
+
+        IPerceptron fromXml = new Perceptron(xmlOut);
+
+        if (!fromXml.equals(perceptron)) {
+            LogResult(testName, false, "Perceptrons not equal");
+        }
+
+        LogResult(testName, true, "");
+    }
     //endregion
 
     //region Private

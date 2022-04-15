@@ -23,10 +23,17 @@ public class Matrix extends XmlBase implements IGenetic {
 
     //region Constructor
     /**
-     * Initialize a matrix from xml
+     * Initialize a matrix from xml element
      */
     public Matrix(Element ele) {
         ProcessElement(ele);
+    }
+
+    /**
+     * Initialize a matrix from xml text
+     */
+    public Matrix(String xml) {
+        ReadXml(xml);
     }
 
     /**

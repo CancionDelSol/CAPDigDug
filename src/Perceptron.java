@@ -26,6 +26,16 @@ public class Perceptron extends XmlBase implements IPerceptron {
     //endregion
 
     //region Constructor
+    /** Create a Perceptron from xml element */
+    public Perceptron(Element ele) {
+        ProcessElement(ele);
+    }
+
+    /** Create a Perceptron from xml text */
+    public Perceptron(String xml) {
+        ReadXml(xml);
+    }
+
     public Perceptron(int[] structure) throws Exception {
         this(structure, null);
     }
@@ -53,7 +63,7 @@ public class Perceptron extends XmlBase implements IPerceptron {
     }
     //endregion
 
-    //region IActivation
+    //region IMatrixFunction
     public IMatrixFunction myActivation = (x) -> { return 1.0/(1.0 + Math.exp(-x)); };
     public IMatrixFunction myRandom = (x) -> { return Util.Uniform(-1.0, 1.0); };
     //endregion
@@ -225,6 +235,40 @@ public class Perceptron extends XmlBase implements IPerceptron {
         }
 
         return rootEle;
+    }
+    //endregion
+
+    //region Object
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        
+        if (!(obj instanceof Perceptron))
+            return false;
+
+        Perceptron other = (Perceptron)obj;
+
+        if (_structure.length != other._structure.length)
+            return false;
+
+        for (int i = 0; i < _structure.length; i++) {
+            if (_structure[i] != other._structure[i])
+                return false;
+        }
+
+        // The Weight set count and bias set counts
+        //  should be equal in a perceptron
+        //  so this is safe
+        for (int curWeightSet = 0; curWeightSet < _weights.size(); curWeightSet++) {
+            if (!_weights.get(curWeightSet).equals(other._weights.get(curWeightSet)))
+                return false;
+
+            if (!_biases.get(curWeightSet).equals(other._biases.get(curWeightSet)))
+                return false;
+        }
+
+        return true;
     }
     //endregion
 }
