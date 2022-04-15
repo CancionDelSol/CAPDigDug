@@ -18,6 +18,9 @@ public class Logger {
     public static void Error(String msg) {
         Write(LogLevel.ERROR, msg);
     }
+    public static void Info(String msg) {
+        Write(LogLevel.INFO, msg);
+    }
     public static void Gui(String msg) {
         Write(LogLevel.GUI, msg);
     }

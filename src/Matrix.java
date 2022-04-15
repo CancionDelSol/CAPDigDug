@@ -257,6 +257,26 @@ public class Matrix extends XmlBase implements IGenetic {
         }
         return null;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+
+        if (!(obj instanceof Matrix))
+            return false;
+
+        Matrix other = (Matrix)obj;
+
+        if (other.Nx != Nx || other.Ny != Ny)
+            return false;
+
+        for (int i = 0; i < _values.length; i++) {
+            if (_values[i] != other._values[i])
+                return false;
+        }
+        return true;
+    }
     //endregion
 
     //region Private

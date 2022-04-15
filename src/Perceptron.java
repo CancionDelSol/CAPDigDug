@@ -191,10 +191,16 @@ public class Perceptron extends XmlBase implements IPerceptron {
                     NodeList weightSetElementNodes = ele.getChildNodes();
                     for (int curWeightMatrix = 0; curWeightMatrix < weightSetElementNodes.getLength(); curWeightMatrix++) {
                         Matrix newMat = new Matrix((Element)weightSetElementNodes.item(curWeightMatrix));
+                        _weights.add(newMat);
                     }
                     break;
+                // Read each bias matrix
                 case (BIAS_SET_NAME):
-                    // Read each bias matrix
+                    NodeList biasSetElementNodes = ele.getChildNodes();
+                    for (int curBiasMatrix = 0; curBiasMatrix < biasSetElementNodes.getLength(); curBiasMatrix++) {
+                        Matrix newMat = new Matrix((Element)biasSetElementNodes.item(curBiasMatrix));
+                        _biases.add(newMat);
+                    }
                     break;
                 default:
                     break;
@@ -256,6 +262,12 @@ public class Perceptron extends XmlBase implements IPerceptron {
             if (_structure[i] != other._structure[i])
                 return false;
         }
+
+        if (_weights.size() != other._weights.size())
+            return false;
+
+        if (_biases.size() != other._biases.size()) 
+            return false;
 
         // The Weight set count and bias set counts
         //  should be equal in a perceptron

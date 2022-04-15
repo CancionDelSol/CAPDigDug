@@ -129,16 +129,27 @@ public class UnitTests {
     public static void PerceptronXmlSerializationTest() throws Exception {
         String testName = "PerceptronXmlSerializationTest";
 
-        int[] testStructure = new int[] { 25, 75, 10, 100, 42, 69 };
+        int[] testStructure = new int[] { 2, 3, 4 };
         IPerceptron perceptron = new Perceptron(testStructure);
 
         String xmlOut = perceptron.WriteXml();
 
-        IPerceptron fromXml = new Perceptron(xmlOut);
+        Perceptron fromXml = new Perceptron(xmlOut);
 
         if (!fromXml.equals(perceptron)) {
             LogResult(testName, false, "Perceptrons not equal");
+            return;
         }
+
+        String newXml = fromXml.WriteXml();
+        if (!xmlOut.equals(newXml))
+        {
+            LogResult(testName, false, "Perceptron xml not equal");
+            Logger.Verbose(xmlOut);
+            Logger.Verbose(newXml);
+            return;
+        }
+        
 
         LogResult(testName, true, "");
     }
