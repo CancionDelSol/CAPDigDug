@@ -1,3 +1,5 @@
+import interfaces.*;
+
 public class UnitTests {
     //region Run all
     public static void RunAll() throws Exception{
@@ -5,6 +7,7 @@ public class UnitTests {
         MatrixMultiplicationTestTwo();
         MatrixAdditionSubtractionTest();
         PerceptronXmlSerializationTest();
+        PerceptronGeneticTest();
     }
     //endregion
 
@@ -130,7 +133,7 @@ public class UnitTests {
         String testName = "PerceptronXmlSerializationTest";
 
         int[] testStructure = new int[] { 2, 3, 4 };
-        IPerceptron perceptron = new Perceptron(testStructure);
+        Perceptron perceptron = new Perceptron(testStructure);
 
         String xmlOut = perceptron.WriteXml();
 
@@ -150,6 +153,28 @@ public class UnitTests {
             return;
         }
         
+
+        LogResult(testName, true, "");
+    }
+
+    public static void PerceptronGeneticTest() throws Exception {
+        String testName = "PerceptronGeneticTest";
+        int[] testStructure = new int[] { 2, 3, 4 };
+        IGenetic p = new Perceptron(testStructure);
+
+        IGenetic newP = p.PerfectCopy();
+
+        if (!newP.equals(p)) {
+            LogResult(testName, false, "Not equal");
+            return;
+        }
+
+        newP = p.MutatedCopy(.01);
+
+        if (newP.equals(p)) {
+            LogResult(testName, false, "Should not be equal");
+            return;
+        }
 
         LogResult(testName, true, "");
     }

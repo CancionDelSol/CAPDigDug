@@ -1,10 +1,8 @@
 import java.util.Arrays;
-import interfaces.IGenetic;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
 
 public class Matrix extends XmlBase implements IGenetic {
     //region Fields

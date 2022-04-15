@@ -6,7 +6,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-public class Perceptron extends XmlBase implements IPerceptron {
+public class Perceptron extends XmlBase implements IPerceptron, IGenetic {
+    //region Constants
+    private static double RATE = .001;
+    //endregion
+
     //region Fields
     private List<Matrix> _weights = new ArrayList<>();
     private List<Matrix> _biases = new ArrayList<>();
@@ -66,6 +70,7 @@ public class Perceptron extends XmlBase implements IPerceptron {
     //region IMatrixFunction
     public IMatrixFunction myActivation = (x) -> { return 1.0/(1.0 + Math.exp(-x)); };
     public IMatrixFunction myRandom = (x) -> { return Util.Uniform(-1.0, 1.0); };
+    public IMatrixFunction myMutate = (x) -> { return x + Util.Uniform(-RATE, RATE); };
     //endregion
 
     //region IPerceptron
@@ -281,6 +286,26 @@ public class Perceptron extends XmlBase implements IPerceptron {
         }
 
         return true;
+    }
+    //endregion
+
+    //region IGenetic
+    public IGenetic PerfectCopy() throws Exception {
+        String xml = WriteXml();
+        return new Perceptron(xml);
+    }
+
+    public IGenetic MutatedCopy(double rate) throws Exception {
+        Perceptron newP = (Perceptron)PerfectCopy();
+
+        RATE = rate;
+
+        for (int i = 0; i < _weights.size(); i++) {
+            newP._weights.get(i).ApplyFunction(myMutate);
+            newP._biases.get(i).ApplyFunction(myMutate);
+        }
+
+        return newP;
     }
     //endregion
 }
