@@ -1,16 +1,37 @@
 import java.util.Arrays;
+import interfaces.IGenetic;
 
-public class Matrix {
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+
+public class Matrix extends XmlBase implements IGenetic {
     //region Fields
     private double[] _values;
+
+    // XMLs
+    private static final String HEAD_ELEMENT_NAME = "MATRIX";
+    private static final String DIMENSIONS_ATT_NAME = "DIM";
+    private static final String VALUES_ELEMENT_NAME = "VALUES";
     //endregion
 
     //region Properties
-    public final int Nx;
-    public final int Ny;
+    public int Nx;
+    public int Ny;
     //endregion
 
     //region Constructor
+    /**
+     * Initialize a matrix from xml
+     */
+    public Matrix(Element ele) {
+        ProcessElement(ele);
+    }
+
+    /**
+     * Initialize a matrix with values
+     */
     public Matrix(int nx, int ny, double[] initialValues) throws Exception {
         this(nx, ny);
         for (int i = 0; i < initialValues.length; i++) {
@@ -124,6 +145,77 @@ public class Matrix {
         for (int i = 0; i < _values.length; i++) {
             _values[i] = function.Activate(_values[i]);
         }
+    }
+    //endregion
+
+    //region IGenetic
+    @Override
+    public IGenetic PerfectCopy() throws Exception {
+        return (IGenetic)clone();
+    }
+
+    @Override
+    public IGenetic MutatedCopy(double rate) throws Exception {
+        Matrix newM = new Matrix(Nx, Ny, _values);
+        for (int i = 0; i < _values.length; i++) {
+            newM._values[i] += Util.Uniform(-rate, rate);
+        }
+        return newM;
+    }
+    //endregion
+
+    //region Xml
+    @Override
+    protected void ProcessElement(Element ele) {
+        if (ele == null)
+            return;
+
+        try {
+            switch (ele.getNodeName()) {
+                case (HEAD_ELEMENT_NAME):
+                    NodeList headElementChildNodes = ele.getChildNodes();
+                    String[] content = ele.getAttribute(DIMENSIONS_ATT_NAME).split(" ");
+                    Nx = Integer.parseInt(content[0]);
+                    Ny = Integer.parseInt(content[1]);
+                    _values = new double[Nx * Ny];
+
+                    for (int i = 0; i < headElementChildNodes.getLength(); i++) {
+                        ProcessElement((Element)headElementChildNodes.item(i));
+                    }
+                    break;
+                // Read each weight matrix
+                case (VALUES_ELEMENT_NAME):
+                    String[] values = ele.getTextContent().split(" ");
+                    for (int v = 0; v < values.length; v++) {
+                        _values[v] = Double.parseDouble(values[v]);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        } catch (Exception exc) {
+            exc.printStackTrace();
+        }
+    }
+
+    @Override
+    protected Element BuildElement(Document parentDoc) {
+        Element rootEle = parentDoc.createElement(HEAD_ELEMENT_NAME);
+        String dims = String.format("%d %d", Nx, Ny);
+        rootEle.setAttribute(DIMENSIONS_ATT_NAME, dims);
+
+        // Values
+        StringBuilder bldr = new StringBuilder();
+        for (int i = 0; i < _values.length; i++) {
+            bldr.append(" ");
+            bldr.append(_values[i]);
+        }
+
+        Element valuesElement = parentDoc.createElement(VALUES_ELEMENT_NAME);
+        valuesElement.setTextContent(bldr.toString().trim());
+        rootEle.appendChild(valuesElement);
+
+        return rootEle;
     }
     //endregion
 

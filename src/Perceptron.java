@@ -2,11 +2,23 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Perceptron implements IPerceptron {
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+public class Perceptron extends XmlBase implements IPerceptron {
     //region Fields
     private List<Matrix> _weights = new ArrayList<>();
     private List<Matrix> _biases = new ArrayList<>();
     private int[] _structure;
+
+    // XML
+    private static final String HEAD_ELEMENT_NAME = "Perceptron";
+    private static final String STRUCTURE_ATT_NAME = "Structure";
+    private static final String WEIGHT_SET_NAME = "WEIGHTS";
+    private static final String WEIGHT_ITEM_NAME = "WEIGHT";
+    private static final String BIAS_SET_NAME = "BIASES";
+    private static final String BIAS_ITEM_NAME = "BIAS";
     //endregion
 
     //region Properties
@@ -139,6 +151,80 @@ public class Perceptron implements IPerceptron {
             _weights.add(newWeights);
             _biases.add(newBiases);
         }
+    }
+    //endregion
+
+    //region XmlBase
+    @Override
+    protected void ProcessElement(Element ele) {
+        if (ele == null)
+            return;
+
+        try {
+            switch (ele.getNodeName()) {
+                // Head Perceptron Element
+                case (HEAD_ELEMENT_NAME):
+                    NodeList headElementChildNodes = ele.getChildNodes();
+                    String[] content = ele.getAttribute(STRUCTURE_ATT_NAME).split(" ");
+                    _structure = new int[content.length];
+                    for (int curS = 0; curS < _structure.length; curS++) {
+                        _structure[curS] = Integer.parseInt(content[curS]);
+                    }
+
+                    for (int i = 0; i < headElementChildNodes.getLength(); i++) {
+                        ProcessElement((Element)headElementChildNodes.item(i));
+                    }
+                    break;
+                
+                // Set of weights
+                case (WEIGHT_SET_NAME):
+                    NodeList weightSetElementNodes = ele.getChildNodes();
+                    for (int curWeightMatrix = 0; curWeightMatrix < weightSetElementNodes.getLength(); curWeightMatrix++) {
+                        Matrix newMat = new Matrix((Element)weightSetElementNodes.item(curWeightMatrix));
+                    }
+                    break;
+                case (BIAS_SET_NAME):
+                    // Read each bias matrix
+                    break;
+                default:
+                    break;
+            }
+        } catch (Exception exc) {
+            exc.printStackTrace();
+        }
+    }
+
+    @Override
+    protected Element BuildElement(Document parentDoc) {
+        Element rootEle = parentDoc.createElement(HEAD_ELEMENT_NAME);
+        String netStructure = "";
+        for (int i = 0; i < _structure.length; i++) {
+            netStructure = String.format("%s %d", netStructure, _structure[i]);
+        }
+        rootEle.setAttribute(STRUCTURE_ATT_NAME, netStructure.trim());
+
+        try {
+            // Weight set element
+            Element weightSet = parentDoc.createElement(WEIGHT_SET_NAME);
+            for (int curWeightSet = 0; curWeightSet < _weights.size(); curWeightSet++) {
+                weightSet.appendChild(_weights.get(curWeightSet).BuildElement(parentDoc));
+            }
+
+            // Bias set element
+            Element biasSet = parentDoc.createElement(BIAS_SET_NAME);
+            for (int curBiasSet = 0; curBiasSet < _biases.size(); curBiasSet++) {
+                biasSet.appendChild(_biases.get(curBiasSet).BuildElement(parentDoc));
+            }
+
+            // Append child nodes
+            rootEle.appendChild(weightSet);
+            rootEle.appendChild(biasSet);
+
+        } catch (Exception exc) {
+            Logger.Error("Matrix BuildElement Exc: " + exc.getMessage());
+        }
+
+        return rootEle;
     }
     //endregion
 }

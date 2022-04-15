@@ -114,10 +114,13 @@ public class UnitTests {
                 }
             }
         }
+
+        LogResult(testName, true, "");
     }
 
     public static void MatrixAdditionSubtractionTest() throws Exception {
-
+        String testName = "MatrixAdditionSubtractionTest";
+        LogResult(testName, false, "Not Implemented yet");
     }
     //endregion
 

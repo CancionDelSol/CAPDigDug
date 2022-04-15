@@ -1,12 +1,3 @@
-// Create a new thread
-new Thread(() -> someMethod()).start();
-
-// Using a method as an argument
-public T myMethod(Callable<T> func) {
-    return func.call();
-}
-
-// Imports for xml serialization
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -25,7 +16,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-// TMP 
+public abstract class XmlBase implements IXmlSerializable {
     //region IXmlSerializable
     @Override
     public void ReadXml(String text) {
@@ -41,7 +32,7 @@ import javax.xml.transform.stream.StreamResult;
             ProcessElement(ele);
 
         } catch (Exception exc) {
-            //exc.printStackTrace();
+            Logger.Error("ReadXml: " + exc.getMessage());
         }
     }
 
@@ -52,8 +43,8 @@ import javax.xml.transform.stream.StreamResult;
         DocumentBuilder db = null;
         try {
             db = dbf.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
+        } catch (Exception exc) {
+            Logger.Error("WriteXml: " + exc.getMessage());
             return "";
         }
 
@@ -71,16 +62,16 @@ import javax.xml.transform.stream.StreamResult;
         Transformer transformer = null;
         try {
             transformer = tf.newTransformer();
-        } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
+        } catch (Exception exc) {
+            Logger.Error("WriteXml: " + exc.getMessage());
             return "";
         }
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         StringWriter writer = new StringWriter();
         try {
             transformer.transform(new DOMSource(doc), new StreamResult(writer));
-        } catch (TransformerException e) {
-            e.printStackTrace();
+        } catch (Exception exc) {
+            Logger.Error("WriteXml: " + exc.getMessage());
         }
         return writer.getBuffer().toString();
     }
@@ -90,4 +81,4 @@ import javax.xml.transform.stream.StreamResult;
     protected abstract void ProcessElement(Element ele);
     protected abstract Element BuildElement(Document parentDoc);
     //endregion
-//end TMP
+}

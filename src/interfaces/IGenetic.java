@@ -1,6 +1,6 @@
 package interfaces;
 
 public interface IGenetic {
-    IGenetic PerfectCopy();
-    IGenetic MutatedCopy(double rate);
+    IGenetic PerfectCopy() throws Exception;
+    IGenetic MutatedCopy(double rate) throws Exception;
 }

@@ -22,6 +22,8 @@ public class Program {
         }
     }
 
+
+    //region Private
     private static void RunUnitTests() {
         try {
             UnitTests.RunAll();
@@ -29,4 +31,9 @@ public class Program {
             System.out.println(exc.getMessage());
         }
     }
+
+    private static void StartGeneticAlgorithm() {
+        
+    }
+    //endregion
 }

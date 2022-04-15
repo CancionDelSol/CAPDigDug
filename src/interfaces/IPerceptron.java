@@ -1,6 +1,6 @@
 import java.util.List;
 
-public interface IPerceptron {
+public interface IPerceptron extends IXmlSerializable {
     //region Properties
     List<Matrix> getWeights() throws Exception;
     List<Matrix> getBiases() throws Exception;
