@@ -31,7 +31,7 @@ run: generate
 	@java -jar DigDug.jar
 
 debug: generate
-	@java -jar DigDug.jar UNITTEST
+	@java -jar DigDug.jar -UNITTEST -l DEBUG -rate 1.0
 
 clean:
 	@echo "Cleaning up..."

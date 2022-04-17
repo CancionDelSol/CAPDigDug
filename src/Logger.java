@@ -6,6 +6,10 @@ public class Logger {
     //endregion
 
     //region Logger
+    public static void SetLevel(LogLevel level) {
+        _logLevel = level;
+    }
+    public static LogLevel GetLevel() { return _logLevel; }
     public static void Throw(String msg) throws Exception {
         Write(LogLevel.ERROR, msg);
         throw new Exception(msg);
