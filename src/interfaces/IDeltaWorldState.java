@@ -7,6 +7,6 @@
 public interface IDeltaWorldState {
     //region Properties
     int getLength();
-    double[] getDelta();
+    double[] getDeltaEncoding();
     //endregion
 }

@@ -8,6 +8,7 @@ public class UnitTests {
         MatrixAdditionSubtractionTest();
         PerceptronXmlSerializationTest();
         PerceptronGeneticTest();
+        PerceptronViabilityTest();
     }
     //endregion
 
@@ -177,6 +178,18 @@ public class UnitTests {
         }
 
         LogResult(testName, true, "");
+    }
+
+    private static void PerceptronViabilityTest() {
+        int[] testStructure = new int[] { 2, 2, 2 };
+        double mutationRate = 1.0;
+        double epochs = 10000;
+        int popSize = 25;
+        
+
+        IPerceptron basePerceptron = new Perceptron(testStructure);
+
+
     }
     //endregion
 

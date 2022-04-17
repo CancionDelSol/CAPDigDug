@@ -18,7 +18,7 @@ public class DeltaWorldState implements IDeltaWorldState{
         return _deltas.length;
     }
 
-    public double[] getDelta() {
+    public double[] getDeltaEncoding() {
         return Arrays.copyOf(_deltas, _deltas.length);
     }
     //endregion

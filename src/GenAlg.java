@@ -40,8 +40,11 @@ public class GenAlg {
     //region GeneticAlgorithm
     /** Run the gentic algorithm
      *   for a certain number of epochs 
+     *  The networks will be ran on each world state
+     *   input. The average performance (error) will
+     *   be used as the criteria for the genetic algorithm
      */
-    public void Execute(int epochs) throws Exception {
+    public void Execute(int epochs, List<IWorldState> inputs ) throws Exception {
         // Check for bad state
         ValidateSetup();
 
@@ -72,4 +75,5 @@ public class GenAlg {
     public interface IErrorFunction {
         double GetError(IWorldState state);
     }
+    public interface IDelta
 }

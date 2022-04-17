@@ -1,7 +1,11 @@
 public interface IWorldState {
     //region Properties
-    public int getLength();
-    public double[] getState();
-    public long getTime();
+    int getLength();
+    double[] getEncoding();
+    long getTime();
+    //endregion
+
+    //region Methods
+    void ApplyDelta(IDeltaWorldState dState);
     //endregion
 }
