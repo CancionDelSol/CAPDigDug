@@ -68,9 +68,9 @@ public class Perceptron extends XmlBase implements IPerceptron, IGenetic {
     //endregion
 
     //region IMatrixFunction
-    public IMatrixFunction myActivation = (x) -> { return 1.0/(1.0 + Math.exp(-x)); };
-    public IMatrixFunction myRandom = (x) -> { return Util.Uniform(-1.0, 1.0); };
-    public IMatrixFunction myMutate = (x) -> { return x + Util.Uniform(-RATE, RATE); };
+    public Matrix.IMatrixFunction myActivation = (x) -> { return 1.0/(1.0 + Math.exp(-x)); };
+    public Matrix.IMatrixFunction myRandom = (x) -> { return Util.Uniform(-1.0, 1.0); };
+    public Matrix.IMatrixFunction myMutate = (x) -> { return x + Util.Uniform(-RATE, RATE); };
     //endregion
 
     //region IPerceptron

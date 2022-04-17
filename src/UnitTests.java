@@ -1,4 +1,5 @@
 import interfaces.*;
+import java.util.*;
 
 public class UnitTests {
     //region Run all
@@ -184,61 +185,80 @@ public class UnitTests {
         String testName = "PerceptronViabilityTest";
         int[] testStructure = new int[] { 2, 2, 2 };
         double mutationRate = 1.0;
-        double epochs = 10000;
+        int epochs = 1000;
         int popSize = 25;
+        int trainingSetSize = 100;
+        double mapSize = 10.0;
 
-        IPerceptron basePerceptron = new Perceptron(testStructure);
+        // Create test training set
+        List<IWorldState> testSet = new ArrayList<IWorldState>();
+        for (int i = 0; i < trainingSetSize; i++) {
+            IWorldState newState = new LinearWorldState(Util.Uniform(-mapSize, mapSize),
+                                                        Util.Uniform(-mapSize, mapSize));
+            testSet.add(newState);
+        }
+
+        IAgent baseAgent = new LinearAgent(testStructure);
 
         GenAlg genAlg = new GenAlg(popSize,
-                                    basePerceptron,
+                                    baseAgent,
                                     mutationRate,
-                                    IErrorFunction errorFunction)
+                                    linearEvaluation);
 
-        LogResult(testName, true, "");
+        double res = genAlg.Execute(epochs, testSet);
+
+        // It should be fairly easy to get a very low
+        //  error for a linear classifier 
+        // In this case we are training a perceptron
+        //  to classify a coordinate as above or below
+        //  the line y = x
+        if (res <= Values.Epsilon)
+            LogResult(testName, true, "Error: " + res);
+        else
+            LogResult(testName, false, "Error: " + res);
     }
-    private IErrorFunction linearEvaluation = (x) -> { 
-        
-     };
-
+    
     //region Used for the Perceptron Viability Test
     /** Will make classifications about a two-dimensional world state */
-    private class LinearAgent implements IAgent {
+    private static class LinearAgent implements IAgent {
         //region Members
         IPerceptron _perceptron;
         //endregion
 
         //region Constructor
         /** Create an initial, random agent */
-        public LinearAgent(int[] structure) {
+        public LinearAgent(int[] structure) throws Exception {
             _perceptron = new Perceptron(structure);
         }
-        private LinearAgent(IPerceptron perceptron) {
+        private LinearAgent(IPerceptron perceptron) throws Exception {
             _perceptron = perceptron;
         }
         //endregion
 
         //region IAgent
-        IDeltaWorldState GetAction(IWorldState currentState) {
+        public IDeltaWorldState GetAction(IWorldState currentState) throws Exception {
             return new LinearDeltaState(_perceptron.FeedForward(currentState.getEncoding()));
         }
         //endregion
 
         //region IGenetic
-        IGenetic PerfectCopy() throws Exception {
-            return new LinearAgent((IPerceptron)_perceptron.PerfectCopy());
+        public IGenetic PerfectCopy() throws Exception {
+            return new LinearAgent((IPerceptron)((IGenetic)_perceptron).PerfectCopy());
         }
-        IGenetic MutatedCopy(double rate) throws Exception {
-            return new LinearAgent((IPerceptron)_perceptron.MutatedCopy(rate));
+        public IGenetic MutatedCopy(double rate) throws Exception {
+            return new LinearAgent((IPerceptron)((IGenetic)_perceptron).MutatedCopy(rate));
         }
         //endregion
     }
-    private class LinearWorldState implements IWorldState {
+
+    /** Holds the testCoordinate value */
+    private static class LinearWorldState implements IWorldState {
         //region Members
         private double[] _coords;
         //endregion
 
         //region Constructor
-        public LinearWorldState(double x, double y) {
+        public LinearWorldState(double x, double y) throws Exception {
             _coords = new double[2];
             _coords[0] = x;
             _coords[1] = y;
@@ -246,33 +266,74 @@ public class UnitTests {
         //endregion
 
         //region Properties
-        int getLength() { return 2; }
-        double[] getEncoding() { return _coords; }
-        long getTime() { return 0L; }
-        boolean getIsComplete() { return true; }
+        public int getLength() throws Exception { return 2; }
+        public double[] getEncoding() throws Exception { return _coords; }
+        public long getTime() throws Exception { return 0L; }
+        public boolean getIsComplete() throws Exception { return true; }
         //endregion
 
         //region Methods
-        void ApplyDelta(IDeltaWorldState dState);
+        /** The delta contains the network output
+          *  Use it to evaluate the "end state" and
+          *  set the values
+          */
+        public void ApplyDelta(IDeltaWorldState dState) throws Exception {
+            // The actual classification of the 
+            //  test coordinates
+            double[] actual = new double[2];
+            actual[0] = _coords[1] > _coords[0] ? 1.0 : 0.0;
+            actual[1] = _coords[0] > _coords[1] ? 1.0 : 0.0;
+
+            // Place the individual errors in
+            //  each network output into the 
+            //  _coords array
+            _coords[0] = dState.getDeltaEncoding()[0] - actual[0];
+            _coords[1] = dState.getDeltaEncoding()[1] - actual[1];
+        }
+        public IWorldState clone() {
+            IWorldState rVal = null;
+            try {
+                rVal = new LinearWorldState(_coords[0], _coords[1]);
+            } catch (Exception exc) {
+                Logger.Error("Exception during clone: " + exc.getMessage());
+            }
+
+            return rVal;
+        }
         //endregion
     }
-    private class LinearDeltaState implements IDeltaWorldState {
+
+    /** This class holds the network output */
+    private static class LinearDeltaState implements IDeltaWorldState {
         //region Members
         private double[] _delta;
         //endregion
 
         //region Constructor
-        public LinearDeltaState(double[] delta) {
+        public LinearDeltaState(double[] delta) throws Exception {
             _delta = delta;
         }
         //endregion
 
         //region IDeltaWorldState
-        public double getDeltaEncoding() {
+        public double[] getDeltaEncoding() throws Exception {
             return _delta;
         }
+        public int getLength() throws Exception { return 2; }
         //endregion
     }
+
+    /** Measures the magnitude of the error array in the world state */
+    private static GenAlg.IErrorFunction linearEvaluation = (worldState) -> { 
+        double rVal = 0.0;
+        try {
+            double[] outputs = worldState.getEncoding();
+            rVal = Util.Mag(outputs);
+        } catch (Exception exc) {
+            Logger.Error("Exception in error function: " + exc.getMessage());
+        }
+        return rVal;
+    };
     //endregion
 
     //region Private

@@ -27,6 +27,12 @@ public class GenAlg {
     double _mutationRate;
     //endregion
 
+    //region Properties
+    public IAgent getBestAgent() {
+        return _source;
+    }
+    //endregion
+
     //region Constructor
     /** Initialize a population and use a genetic algorithm to minimize the error function*/
     public GenAlg(int popSize, IAgent initializer, double mutationRate, IErrorFunction errorFunction) {
@@ -44,7 +50,11 @@ public class GenAlg {
      *   input. The average performance (error) will
      *   be used as the criteria for the genetic algorithm
      */
-    public void Execute(int epochs, List<IWorldState> inputs ) throws Exception {
+    public double Execute(int epochs, List<IWorldState> inputs ) throws Exception {
+        return Execute(epochs, Values.Epsilon, inputs);
+    }
+
+    public double Execute(int epochs, double threshold, List<IWorldState> inputs) throws Exception {
         // Check for bad state
         ValidateSetup();
 
@@ -52,8 +62,10 @@ public class GenAlg {
         double bestError = Values.VeryLarge;
 
         // Iterate over epochs
-        for (int i = 0; i < epochs; i++) {
-            Logger.VERBOSE("Epoch : " + i);
+        int curEpoch = 0;
+        do {
+            if (curEpoch%100 == 0)
+                Logger.Verbose(" Epoch : " + curEpoch);
 
             // Run each genetic (network) for each world state
             //  and take the average performance
@@ -73,11 +85,14 @@ public class GenAlg {
 
                     do {
                         IDeltaWorldState delta = newMember.GetAction(copy);
+
                         copy.ApplyDelta(delta);
                     } while (!copy.getIsComplete());
 
-                    avgPerformance += _errorFunction.GetError(copy);
+                    double curError = _errorFunction.GetError(copy);
+                    avgPerformance += curError;
                 }
+
                 avgPerformance = avgPerformance/(double)inputs.size();
 
                 if (avgPerformance < bestError) {
@@ -89,21 +104,31 @@ public class GenAlg {
                 newMember = (IAgent)_source.MutatedCopy(_mutationRate);
             }
             _source = replacement;
-        }
+
+            if (curEpoch%100 == 0)
+                Logger.Verbose("  Best Error: " + bestError);
+
+        } while (bestError > threshold && curEpoch++ < epochs);
+
+        return bestError;
     }
 
     private void ValidateSetup() throws Exception {
+        Logger.Verbose("Validating Setup");
+
         if (_errorFunction == null)
-            throw new Exception("No error function");
+            Logger.Throw("No error function");
         
         if (_popSize < 1)
-            throw new Exception("Invalid population size: " + String.valueOf(_popSize));
+            Logger.Throw("Invalid population size: " + String.valueOf(_popSize));
 
         if (_source == null)
-            throw new Exception ("No source genetic");
+            Logger.Throw("No source genetic");
 
         if (_mutationRate < Values.Epsilon)
-            throw new Exception ("Mutation rate too small");
+            Logger.Throw("Mutation rate too small");
+
+        Logger.Verbose(" Setup validated");
     }
     //endregion
 

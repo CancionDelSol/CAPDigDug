@@ -6,6 +6,10 @@ public class Logger {
     //endregion
 
     //region Logger
+    public static void Throw(String msg) throws Exception {
+        Write(LogLevel.ERROR, msg);
+        throw new Exception(msg);
+    }
     public static void Debug(String msg) {
         Write(LogLevel.DEBUG, msg);
     }
@@ -62,7 +66,7 @@ public class Logger {
             _value = val;
         }
         public boolean HasLevel(LogLevel level) {
-            return _value >= level._value;
+            return _value <= level._value;
         }
     }
     //endregion

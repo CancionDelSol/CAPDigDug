@@ -26,4 +26,12 @@ public class Util {
     public static double Uniform(double min, double max) {
         return ((max - min) * _rand.nextDouble()) + min;
     }
+
+    public static double Mag(double[] vec) {
+        double sum = 0.0;
+        for (int i = 0; i < vec.length; i++) {
+            sum += Math.pow(vec[i], 2.0);
+        }
+        return Math.sqrt(sum);
+    }
 }

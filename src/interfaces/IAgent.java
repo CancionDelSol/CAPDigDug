@@ -1,3 +1,3 @@
 public interface IAgent extends IGenetic {
-    IDeltaWorldState GetAction(IWorldState currentState);
+    IDeltaWorldState GetAction(IWorldState currentState) throws Exception;
 }

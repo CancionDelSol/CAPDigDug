@@ -38,5 +38,6 @@ clean:
 	@rm -r src/build/classes
 	@rm src/myManifest
 	@rm src/build/*.jar
+	@rm -r src/build
 	@rm ./*.jar
 	

@@ -6,7 +6,7 @@
  */
 public interface IDeltaWorldState {
     //region Properties
-    int getLength();
-    double[] getDeltaEncoding();
+    int getLength() throws Exception ;
+    double[] getDeltaEncoding() throws Exception ;
     //endregion
 }

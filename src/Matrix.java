@@ -294,4 +294,12 @@ public class Matrix extends XmlBase implements IGenetic {
         return index;
     }
     //endregion
+
+    //region IMatrixFunction
+    public interface IMatrixFunction {
+        // Lambda
+        double Activate(double x);
+    }
+    //endregion
+
 }

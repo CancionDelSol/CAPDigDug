@@ -1,6 +1,7 @@
 public class Program {
     public static void main(String[] args) {
-        
+        Logger.Debug("Start of program");
+
         // Run test suite
         if (args.length > 0) {
             ProcessCLArgs(args);
