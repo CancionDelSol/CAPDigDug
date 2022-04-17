@@ -3,6 +3,7 @@ public interface IWorldState {
     int getLength();
     double[] getEncoding();
     long getTime();
+    boolean getIsComplete();
     //endregion
 
     //region Methods

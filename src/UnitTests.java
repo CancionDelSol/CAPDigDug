@@ -180,16 +180,98 @@ public class UnitTests {
         LogResult(testName, true, "");
     }
 
-    private static void PerceptronViabilityTest() {
+    private static void PerceptronViabilityTest() throws Exception {
+        String testName = "PerceptronViabilityTest";
         int[] testStructure = new int[] { 2, 2, 2 };
         double mutationRate = 1.0;
         double epochs = 10000;
         int popSize = 25;
-        
 
         IPerceptron basePerceptron = new Perceptron(testStructure);
 
+        GenAlg genAlg = new GenAlg(popSize,
+                                    basePerceptron,
+                                    mutationRate,
+                                    IErrorFunction errorFunction)
 
+        LogResult(testName, true, "");
+    }
+    private IErrorFunction linearEvaluation = (x) -> { 
+        
+     };
+
+    //region Used for the Perceptron Viability Test
+    /** Will make classifications about a two-dimensional world state */
+    private class LinearAgent implements IAgent {
+        //region Members
+        IPerceptron _perceptron;
+        //endregion
+
+        //region Constructor
+        /** Create an initial, random agent */
+        public LinearAgent(int[] structure) {
+            _perceptron = new Perceptron(structure);
+        }
+        private LinearAgent(IPerceptron perceptron) {
+            _perceptron = perceptron;
+        }
+        //endregion
+
+        //region IAgent
+        IDeltaWorldState GetAction(IWorldState currentState) {
+            return new LinearDeltaState(_perceptron.FeedForward(currentState.getEncoding()));
+        }
+        //endregion
+
+        //region IGenetic
+        IGenetic PerfectCopy() throws Exception {
+            return new LinearAgent((IPerceptron)_perceptron.PerfectCopy());
+        }
+        IGenetic MutatedCopy(double rate) throws Exception {
+            return new LinearAgent((IPerceptron)_perceptron.MutatedCopy(rate));
+        }
+        //endregion
+    }
+    private class LinearWorldState implements IWorldState {
+        //region Members
+        private double[] _coords;
+        //endregion
+
+        //region Constructor
+        public LinearWorldState(double x, double y) {
+            _coords = new double[2];
+            _coords[0] = x;
+            _coords[1] = y;
+        }
+        //endregion
+
+        //region Properties
+        int getLength() { return 2; }
+        double[] getEncoding() { return _coords; }
+        long getTime() { return 0L; }
+        boolean getIsComplete() { return true; }
+        //endregion
+
+        //region Methods
+        void ApplyDelta(IDeltaWorldState dState);
+        //endregion
+    }
+    private class LinearDeltaState implements IDeltaWorldState {
+        //region Members
+        private double[] _delta;
+        //endregion
+
+        //region Constructor
+        public LinearDeltaState(double[] delta) {
+            _delta = delta;
+        }
+        //endregion
+
+        //region IDeltaWorldState
+        public double getDeltaEncoding() {
+            return _delta;
+        }
+        //endregion
     }
     //endregion
 
