@@ -37,5 +37,6 @@ clean:
 	@echo "Cleaning up..."
 	@rm -r src/build/classes
 	@rm src/myManifest
+	@rm src/build/*.jar
 	@rm ./*.jar
 	

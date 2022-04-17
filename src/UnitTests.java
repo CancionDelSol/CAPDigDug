@@ -183,9 +183,9 @@ public class UnitTests {
     //region Private
     private static void LogResult(String testName, boolean testPassed, String message) {
         if (testPassed) {
-            Logger.Debug(testName + " PASSED : " + message);
+            System.out.println("TestResult: " + testName + " PASSED : " + message);
         } else {
-            Logger.Debug(testName + " FAILED : " + message);
+            System.out.println("TestResult: " + testName + " FAILED : " + message);
         }
     }
     //endregion

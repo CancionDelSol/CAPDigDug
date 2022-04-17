@@ -3,7 +3,7 @@
  *  to evaluate the utility of a particular world
  *  state
  */
-public interface UtilityFunction {
+public interface IUtilityFunction {
     // Lambda
     double CalculateUtility(IWorldState state);
 }

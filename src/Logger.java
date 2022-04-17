@@ -2,7 +2,7 @@ import java.util.Date;
 
 public class Logger {
     //region Fields
-    private LogLevel _logLevel = LogLevel.DEBUG;
+    private static LogLevel _logLevel = LogLevel.DEBUG;
     //endregion
 
     //region Logger
@@ -31,6 +31,12 @@ public class Logger {
         return new Date().toString();
     }
     private static void Write(LogLevel level, String msg) {
+        if (!_logLevel.HasLevel(level))
+            return;
+
+        PrintToScreen(level, msg);
+    }
+    private static void PrintToScreen(LogLevel level, String msg) {
         System.out.println(
             String.format(
                 "%s | [%8s] : %s",
@@ -51,24 +57,12 @@ public class Logger {
         INFO(16),
         GUI(32);
 
-        int _flags = 1;
-        int _val;
+        int _value;
         LogLevel(int val) {
-            _val = val;
-            do {
-                _flags &= val;
-                val /= 2;
-                if (val == 1)
-                    break;
-            } while (val > 1);
+            _value = val;
         }
-        void Remove(LogLevel level) {
-            if ((_val & level._val) == level._val)
-                _val &= level._val;
-        }
-        void Add(LogLevel level) {
-            if ((_val & level._val) != level._val)
-                _val &= level._val;
+        public boolean HasLevel(LogLevel level) {
+            return _value >= level._value;
         }
     }
     //endregion
