@@ -34,4 +34,28 @@ public class Util {
         }
         return Math.sqrt(sum);
     }
+
+    public static String DisplayCoord(int x, int y) {
+        return "(" + x + ", " + y + ")";
+    }
+
+    public static String DisplayArray(int[] array) {
+        StringBuilder bldr = new StringBuilder();
+        bldr.append("[");
+        for (int i = 0; i < array.length - 1; i++) {
+            bldr.append(String.format("%3d ", array[i]));
+        }
+        bldr.append(String.format("%3d]", array[array.length - 1]));
+        return bldr.toString();
+    }
+
+    public static String DisplayArray(double[] array) {
+        StringBuilder bldr = new StringBuilder();
+        bldr.append("[");
+        for (int i = 0; i < array.length - 1; i++) {
+            bldr.append(String.format("%.4f ", array[i]));
+        }
+        bldr.append(String.format("%.4f]", array[array.length - 1]));
+        return bldr.toString();
+    }
 }

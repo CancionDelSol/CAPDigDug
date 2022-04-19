@@ -68,7 +68,9 @@ public class Matrix extends XmlBase implements IGenetic {
         
         // Dimension mismatch
         if (a.Nx != b.Ny)
-            throw new Exception("Mismatched Dimensions in Multiply");
+            throw new Exception("Mismatched Dimensions in Multiply: " 
+                + Util.DisplayCoord(a.Nx, a.Ny) + " | " 
+                + Util.DisplayCoord(b.Nx, b.Ny));
 
         // Result matrix
         Matrix res = new Matrix(b.Nx, a.Ny);
@@ -199,7 +201,7 @@ public class Matrix extends XmlBase implements IGenetic {
                     break;
             }
         } catch (Exception exc) {
-            exc.printStackTrace();
+            Logger.Error("Exception in ProcessElement " + exc.getMessage());
         }
     }
 
@@ -280,7 +282,7 @@ public class Matrix extends XmlBase implements IGenetic {
     //region Private
     private boolean _inBounds(int x, int y) throws Exception {
         if (x < 0 || x >= Nx || y < 0 || y >= Ny)
-            throw new Exception("Out of bounds (" + x + ", " + y + ")");
+            Logger.Throw("Out of bounds (" + x + ", " + y + ")");
         
         return true;
     }
@@ -289,7 +291,7 @@ public class Matrix extends XmlBase implements IGenetic {
     private int _getIndex(int x, int y) throws Exception {
         int index = (y * Nx) + x;
         if (index < 0 || index >= _values.length)
-            throw new Exception("Out of bounds [" + index + "]: (" + x + ", " + y + ") ");
+            Logger.Throw("Out of bounds [" + index + "]: (" + x + ", " + y + ") ");
 
         return index;
     }

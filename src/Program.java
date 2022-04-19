@@ -1,17 +1,11 @@
 import java.util.*;
 
 public class Program {
-    //region Settings
-    private static ProgramType _type = ProgramType.ALL;
-    private static int _epochs = 1000;
-    private static int[] _networkStructure = new int[] { 2, 2, 2 };
-    private static double _mutationRate = 1.0;
-    private static int _popSize = 100;
-    private static int _setSize = 100;
-    private static int _mapSize = 5;
-    private static double _performanceThreshold = Values.Epsilon;
+    //region Members
+    private static ProgramType _type;
     //endregion
 
+    //region ProgramType
     /** Enum describing what steps to run */
     private enum ProgramType {
         ALL,      // Run UNITTEST|GENALG|LIVERUN
@@ -42,6 +36,7 @@ public class Program {
             if (_type == ProgramType.PLAYER) {
                 RunPlayerSession();
             }   
+
         } catch (Exception exc) {
             Logger.Error("Exception in main: " + exc.getMessage());
         }
@@ -66,30 +61,65 @@ public class Program {
                     Logger.Debug("Setting program type to GENALG");
                     _type = ProgramType.GENALG;
                     break;
-                case "-rate":
+                case "-RATE":
                     if (i + 1 >= args.length)
-                        Logger.Throw("Incomplete arguments for -rate");
+                        Logger.Throw("Incomplete arguments for mutation rate");
                     
-                    _mutationRate = Double.parseDouble(args[i + 1]);
-                    Logger.Debug("Setting mutation rate to: " + _mutationRate);
+                    Settings.MUTATION_RATE = Double.parseDouble(args[i + 1]);
+                    Logger.Debug("Setting mutation rate to: " + Settings.MUTATION_RATE);
                     break;
-                case "-l":
+                case "-L":
                     if (i + 1 >= args.length)
-                        Logger.Throw("Incomplete arguments for -rate");
+                        Logger.Throw("Incomplete arguments for log level");
 
                     Logger.SetLevel(Logger.LogLevel.valueOf(args[i + 1].toUpperCase()));
-                    Logger.Debug("Setting mutation rate to: " + Logger.GetLevel());
+                    Logger.Debug("Setting log level to: " + Logger.GetLevel());
                     break;
-                case "-e":
+                case "-E":
                     if (i + 1 >= args.length)
-                        Logger.Throw("Incomplete arguments for -rate");
+                        Logger.Throw("Incomplete arguments for epochs");
 
-                    _epochs = Integer.parseInt(args[i + 1]);
-                    Logger.Debug("Setting epochs to: " + _epochs);
+                    Settings.EPOCHS = Integer.parseInt(args[i + 1]);
+                    Logger.Debug("Setting epochs to: " + Settings.EPOCHS);
+                    break;
+                case "-POP":
+                    if (i + 1 >= args.length)
+                        Logger.Throw("Incomplete arguments for population size");
+
+                    Settings.POPULATION_SIZE = Integer.parseInt(args[i + 1]);
+                    Logger.Debug("Setting population size to: " + Settings.POPULATION_SIZE);
+                    break;
+                case "-N":
+                    if (i + 1 >= args.length)
+                        Logger.Throw("Incomplete arguments for population size");
+
+                    String structure = args[i + 1];
+
+                    structure = structure.replace("(", "");
+                    structure = structure.replace(")", "");
+
+                    String[] parts = structure.split(",");
+                    Settings.NETWORK_STRUCTURE = new int[parts.length + 2];
+
+                    // Set input count
+                    Settings.NETWORK_STRUCTURE[0] = Settings.NETWORK_INPUT_COUNT;
+
+                    // Set hidden layer
+                    for (int p = 1; p < parts.length - 1; p++) {
+                        Settings.NETWORK_STRUCTURE[i] = Integer.parseInt(parts[i]);
+                    }
+
+                    // Set output count
+                    Settings.NETWORK_STRUCTURE[parts.length - 1] = Settings.NETWORK_OUTPUT_COUNT;
+
+                    Logger.Debug("Setting network structure to: " + Util.DisplayArray(Settings.NETWORK_STRUCTURE));
+                    break;
                 default:
                     break;
             }
         }
+
+        Logger.Debug("Finished reading command line arguments");
     }
 
     //region Private
@@ -107,20 +137,22 @@ public class Program {
         try {
             // Create test training set
             List<IWorldState> testSet = new ArrayList<IWorldState>();
-            for (int i = 0; i < _setSize; i++) {
+            for (int i = 0; i < Settings.SET_SIZE; i++) {
+
                 // Generate a random world state
-                IWorldState newState = new WorldState();
+                int dim = Settings.MAP_SIZE;
+                IWorldState newState = new WorldState(dim, dim);
                 testSet.add(newState);
             }
 
-            IAgent baseAgent = new DigAgent(_networkStructure);
+            IAgent baseAgent = new DigAgent(Settings.NETWORK_STRUCTURE);
 
-            GenAlg genAlg = new GenAlg(_popSize,
+            GenAlg genAlg = new GenAlg(Settings.POPULATION_SIZE,
                                         baseAgent,
-                                        _mutationRate,
+                                        Settings.MUTATION_RATE,
                                         WorldState.digDugEvaluation);
 
-            double res = genAlg.Execute(_epochs, testSet);
+            double res = genAlg.Execute(Settings.EPOCHS, testSet);
 
             Logger.Gui(" Algorithm finished with final agent performance error: " + res);
 
@@ -132,14 +164,14 @@ public class Program {
     private static void RunPlayerSession() throws Exception {
         Logger.Gui("Running Player Session");
         try {
-
+            Logger.Throw("TODO : Program.RunPlayerSession");
         } catch (Exception exc) {
             Logger.Error("Exception during player session: " + exc.getMessage());
         }
     }
 
     private static void RunLive() throws Exception {
-        Logger.Throw("TODO : RunLive");
+        Logger.Throw("TODO : Program.RunLive");
     }
     //endregion
 }

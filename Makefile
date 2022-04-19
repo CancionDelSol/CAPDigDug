@@ -33,6 +33,9 @@ run: generate
 debug: generate
 	@java -jar DigDug.jar -UNITTEST -l DEBUG -rate 1.0
 
+train: generate
+	@java -jar DigDug.jar -GENETICALG -l DEBUG -rate .5 -epochs 10 -pop 5
+
 clean:
 	@echo "Cleaning up..."
 	@rm -r src/build/classes
