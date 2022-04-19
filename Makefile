@@ -4,9 +4,9 @@ SOURCE_DIR := src
 BUILD_DIR := src/build
 CLASSES_OUTPUT := src/build/classes
 JAVA_FILES := $(find . -name '*.java')
-NET_STRUCT := 25:7
+NET_STRUCT := 75:50:25
 MUT_RATE := 1.0
-MAP_SIZE := 3
+MAP_SIZE := 9
 
 classpath:
 	@mkdir -p $(CLASSES_OUTPUT)

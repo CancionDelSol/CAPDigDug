@@ -119,8 +119,8 @@ public class WorldState implements IWorldState {
 
         // Read player movement output
         //  0 : move left
-        //  1 : move right
-        //  2 : move up
+        //  1 : move up
+        //  2 : move right
         //  3 : move down
         double threshold = Settings.OUTPUT_FIRE_THRESHOLD;
 
@@ -141,10 +141,10 @@ public class WorldState implements IWorldState {
                     dX = -1;
                     break;
                 case 1:
-                    dX = 1;
+                    dY = -1;
                     break;
                 case 2:
-                    dY = -1;
+                    dX = 1;
                     break;
                 case 3:
                     dY = 1;
@@ -267,7 +267,6 @@ public class WorldState implements IWorldState {
         }
         int curIndex = inArray * perTile;
         _encodedState[curIndex] = Math.sin(_curTime * Values.PI/4.0);
-        Logger.Debug("State: " + Util.DisplayArray(_encodedState));
     }
 
     /** Randomize the game board */
@@ -324,7 +323,8 @@ public class WorldState implements IWorldState {
         int xPrime = player_X + x;
         int yPrime = player_Y + y;
 
-        if ( xPrime < 0 || xPrime >= Settings.MAP_SIZE)
+
+        if (xPrime < 0 || xPrime >= Settings.MAP_SIZE)
             xPrime = player_X;
         
         if (yPrime < 0 || yPrime >= Settings.MAP_SIZE)
@@ -342,28 +342,18 @@ public class WorldState implements IWorldState {
                 
                 break;
 
-            case ROCK:
-                // Do nothing, the player can't go here
-                break;
-
             case COIN:
             case DIRT:
-                // Increase score, move player to spot
-                _setAtCoord(xPrime, yPrime, TileType.PLAYER);
-                _setAtCoord(player_X, player_Y, TileType.EMPTY);
-                player_X = xPrime;
-                player_Y = yPrime;
                 _score += atNewSpot.getpointTotal();
-                break;
             case EMPTY:
                 _setAtCoord(xPrime, yPrime, TileType.PLAYER);
                 _setAtCoord(player_X, player_Y, TileType.EMPTY);
                 player_X = xPrime;
                 player_Y = yPrime;
                 break;
-            case VOID:
-                break;
+
             default:
+                break;
         }
     }
     //endregion
