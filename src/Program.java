@@ -1,4 +1,5 @@
 import java.util.*;
+import java.nio.charset.*;
 
 public class Program {
     //region Members
@@ -43,21 +44,23 @@ public class Program {
             }   
 
         } catch (Exception exc) {
+            exc.printStackTrace();
             Logger.Error("Exception in main: " + exc.getMessage());
         }
     }
     
     /** Prcesses the command line arguments */
     private static void ProcessCLArgs(String[] args) throws Exception {
-        for (int i = 0; i < args.length;) {
+
+        for (int i = 0; i < args.length; i++) {
             String arg = args[i].toUpperCase();
-            Logger.Debug("Switch for " + arg);
+
             switch (arg) {
                 // Set Unit test
                 case "-U":
                 case "-UNITTEST":
                     Logger.Debug("Setting program type to UNITTEST");
-                    _type = ProgramType.UNITTEST; i++;
+                    _type = ProgramType.UNITTEST;
                     break;
 
                 // Set Player Playthrough
@@ -71,7 +74,7 @@ public class Program {
                 case "-G":
                 case "-GENETICALG":
                     Logger.Debug("Setting program type to GENALG");
-                    _type = ProgramType.GENALG; i++;
+                    _type = ProgramType.GENALG;
                     break;
 
                 // Read the mutation rate
@@ -79,24 +82,26 @@ public class Program {
                     if (i + 1 >= args.length)
                         Logger.Throw("Incomplete arguments for mutation rate");
                     
-                    Settings.MUTATION_RATE = Double.parseDouble(args[++i]);
+                    Settings.MUTATION_RATE = Double.parseDouble(args[i + 1]);
                     Logger.Debug("Setting mutation rate to: " + Settings.MUTATION_RATE);
                     break;
+
                 // Read Logger level
                 case "-L":
                     if (i + 1 >= args.length)
                         Logger.Throw("Incomplete arguments for log level");
 
-                    Logger.SetLevel(Logger.LogLevel.valueOf(args[++i].toUpperCase()));
+                    Logger.SetLevel(Logger.LogLevel.valueOf(args[i + 1].toUpperCase()));
                     Logger.Debug("Setting log level to: " + Logger.GetLevel());
                     break;
 
                 // Read the Epochs
                 case "-E":
+                case "-EPOCHS":
                     if (i + 1 >= args.length)
                         Logger.Throw("Incomplete arguments for epochs");
 
-                    Settings.EPOCHS = Integer.parseInt(args[++i]);
+                    Settings.EPOCHS = Integer.parseInt(args[i + 1]);
                     Logger.Debug("Setting epochs to: " + Settings.EPOCHS);
                     break;
 
@@ -105,7 +110,7 @@ public class Program {
                     if (i + 1 >= args.length)
                         Logger.Throw("Incomplete arguments for population size");
 
-                    Settings.POPULATION_SIZE = Integer.parseInt(args[++i]);
+                    Settings.POPULATION_SIZE = Integer.parseInt(args[i + 1]);
 
                     if (Settings.POPULATION_SIZE < 1)
                         Logger.Throw("Cannot have population size less than 1");
@@ -118,7 +123,7 @@ public class Program {
                     if (i + 1 >= args.length)
                         Logger.Throw("Incomplete arguments for map size");
 
-                    Settings.MAP_SIZE = Integer.parseInt(args[++i]);
+                    Settings.MAP_SIZE = Integer.parseInt(args[i + 1]);
 
                     if (Settings.MAP_SIZE < 1)
                         Logger.Throw("Cannot have map size less than 1");
@@ -134,22 +139,22 @@ public class Program {
                         Logger.Throw("Incomplete arguments for network structure");
 
                     // Get the text entered by the user
-                    String structure = args[++i];
+                    String structure = args[i + 1];
 
                     // Remove brackets if included
                     structure = structure.replace("(", "");
                     structure = structure.replace(")", "");
 
                     // Split by commas
-                    String[] parts = structure.split(",");
+                    String[] parts = structure.split(":");
                     Settings.NETWORK_STRUCTURE = new int[parts.length + 2];
 
                     // Set input count
                     Settings.NETWORK_STRUCTURE[0] = Settings.NETWORK_INPUT_COUNT;
 
                     // Set hidden layer
-                    for (int p = 1; p < parts.length; p++) {
-                        Settings.NETWORK_STRUCTURE[i] = Integer.parseInt(parts[i]);
+                    for (int p = 0; p < parts.length; p++) {
+                        Settings.NETWORK_STRUCTURE[p + 1] = Integer.parseInt(parts[p]);
                     }
 
                     // Set output count
@@ -161,8 +166,6 @@ public class Program {
                 
                 // Throw exception for unrecognized argument
                 default:
-                    Logger.Error("Unrecognized argument: " + args[i]);
-                    i++;
                     break;
             }
         }
@@ -202,13 +205,16 @@ public class Program {
                                         Settings.MUTATION_RATE,
                                         WorldState.digDugEvaluation);
 
-            double res = genAlg.Execute(Settings.EPOCHS, testSet);
+            // Run in chunks so we can save network
+            for (int i = 0; i < Settings.EPOCHS/10; i++) {
+                double res = genAlg.Execute(Settings.EPOCHS, testSet);
 
-            Logger.Gui(" Algorithm finished with final agent performance error: " + res);
-            Logger.Gui("  Saving Network to file");
+                Logger.Gui(" Algorithm finished with final agent performance error: " + res);
+                Logger.Gui("  Saving Network to file");
 
-            SaveNetwork();
-
+                SaveNetwork();
+            }
+            
         } catch (Exception exc) {
             Logger.Error("Exception during genetic algorithm: " + exc.getMessage());
         }
@@ -232,9 +238,6 @@ public class Program {
          has already altered the settings
          using the cli*/
     private static void SetDefaults() throws Exception {
-        
-        // Load the cached network
-        LoadCachedNetwork();
 
         // Special cases
         int mapSq = Settings.MAP_SIZE * Settings.MAP_SIZE;
@@ -259,6 +262,7 @@ public class Program {
         //  This is equal to the number of possible tiles
         //   minus the void tiles which do not trigger
         //   neuron activity.
+        Logger.Debug("Agent FOV: " + Settings.AGENT_FOV);
         int fovInputs = (TileType.values().length - 1) * Settings.AGENT_FOV * Settings.AGENT_FOV;
         Settings.NETWORK_STRUCTURE[0] = fovInputs;
         Settings.NETWORK_INPUT_COUNT = fovInputs;
@@ -272,17 +276,25 @@ public class Program {
         String fileContent = Util.ReadFile(Settings.NETWORK_FILE_NAME, StandardCharsets.UTF_8);
 
         _cachedNetwork = new Perceptron(fileContent); 
+
+        // Incompatible network, just make a new one
+        if (_cachedNetwork.getStructure()[0] != Settings.NETWORK_INPUT_COUNT) {
+            Logger.Warn("Incompatible network loaded, creating new one");
+            _cachedNetwork = new Perceptron(Settings.NETWORK_STRUCTURE);
+        }   
     }
+
     private static void SaveNetwork() throws Exception {
-        WriteFile(((IXmlSerializable)getNetwork()).GetXml());
+        Util.WriteFile(Settings.NETWORK_FILE_NAME, ((IXmlSerializable)getNetwork()).WriteXml());
     }
+    
     private static IPerceptron getNetwork() throws Exception {
         if (_cachedNetwork == null) {
             try {
                 LoadCachedNetwork();
             } catch (Exception exc) {
                 Logger.Warn(" No network to load");
-                _cachedNetwork = new DigAgent(Settings.NETWORK_STRUCTURE);
+                _cachedNetwork = new Perceptron(Settings.NETWORK_STRUCTURE);
             }
         }
         return _cachedNetwork; 

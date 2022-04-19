@@ -37,7 +37,7 @@ debug: generate
 
 train: generate
 	@clear
-	@java -jar DigDug.jar -GENETICALG -l DEBUG -rate .5 -EPOCHS 10 -pop 5 -M 7
+	@java -jar DigDug.jar -GENETICALG -l DEBUG -rate .5 -EPOCHS 10000 -pop 25 -M 5 -N 10:7:8
 
 clean:
 	@echo "Cleaning up..."

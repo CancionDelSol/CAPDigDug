@@ -10,6 +10,8 @@ public class WorldState implements IWorldState {
     //endregion
 
     //region Gameboard
+    // TODO : Set up shooting mechanics
+    // TODO : Set up enemy AI
     /** Members */
     private long _score = 0L;
     private boolean _isComplete = false;
@@ -232,7 +234,7 @@ public class WorldState implements IWorldState {
         //  and checking to see if it is 
         for (int x = 0; x < Settings.AGENT_FOV; x++) {
             for (int y = 0; y < Settings.AGENT_FOV; y++) {
-                TileType atIndex = GetTileType(x, y);
+                TileType atIndex = GetTileType(x - Settings.AGENT_FOV/2, y - Settings.AGENT_FOV/2);
 
                 if (atIndex != TileType.VOID) {
                     int netIndex = x * y + atIndex.ordinal();
