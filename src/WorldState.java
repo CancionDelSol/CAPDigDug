@@ -19,21 +19,30 @@ public class WorldState implements IWorldState {
     private List<TileType> _destroyed = new ArrayList<>();
     
     /** Return the tile piece at a given coordinate */
+    private TileType GetTileType(int x, int y) throws Exception {
+        int index = _getIndex(x, y, false);
+        return index < 0 ? TileType.VOID : _tiles[index];
+    }
+
     private TileType _getAtCoord(int x, int y) throws Exception {
-        return _tiles[_getIndex(x, y)];
+        return _tiles[_getIndex(x, y, true)];
     }
 
     /** Set the tile type at a given coordinate */
     private void _setAtCoord(int x, int y, TileType tile) throws Exception {
-        _tiles[_getIndex(x, y)] = tile;
+        _tiles[_getIndex(x, y, true)] = tile;
     }
 
     /** Return the index in the _values array */
-    private int _getIndex(int x, int y) throws Exception {
+    private int _getIndex(int x, int y, boolean throwExc) throws Exception {
         int index = (y * _x) + x;
-        if (index < 0 || index >= _tiles.length)
-            Logger.Throw("Out of bounds [" + index + "]: (" + x + ", " + y + ") ");
-
+        if (index < 0 || index >= _tiles.length) {
+            if (throwExc)
+                Logger.Throw("Out of bounds [" + index + "]: (" + x + ", " + y + ") ");
+            else
+                return -1;
+        }
+        
         return index;
     }
     //endregion
@@ -73,6 +82,9 @@ public class WorldState implements IWorldState {
         return getEncoding().length;
     }
     public double[] getEncoding() throws Exception {
+        if (getIsComplete())
+            Logger.Throw("Attempt to get encoding for completed game");
+
         if (_encodedState == null)
             CacheEncodedState();
 
@@ -193,8 +205,20 @@ public class WorldState implements IWorldState {
     };
 
     private double GetDigAgentScore() {
-        // TODO : WorldState.GetDigAgentScore
-        return Util.Uniform(0.0, 1.0);
+        // Return the current score as a fraction of the total
+        //  possible score
+        double totalPossibleScore = 1.0; // To prevent divide by zero
+
+        totalPossibleScore += _score;
+
+        for (int i = 0; i < _tiles.length; i++) {
+            TileType tile = _tiles[i];
+            if (tile == TileType.EMPTY)
+                continue;
+
+            totalPossibleScore += tile.getpointTotal();
+        }
+        return (totalPossibleScore - _score)/totalPossibleScore;
     }
     //endregion
 
@@ -203,22 +227,22 @@ public class WorldState implements IWorldState {
     private void CacheEncodedState() throws Exception {
         _encodedState = new double[Settings.NETWORK_INPUT_COUNT];
 
-        // TODO : Cache the encoded state
+        // Create a circular view of the current map state
+        //  by iterating over a square around the player,
+        //  and checking to see if it is 
+        for (int x = 0; x < Settings.AGENT_FOV; x++) {
+            for (int y = 0; y < Settings.AGENT_FOV; y++) {
+                TileType atIndex = GetTileType(x, y);
+
+                if (atIndex != TileType.VOID) {
+                    int netIndex = x * y + atIndex.ordinal();
+                    _encodedState[netIndex] = 1.0;
+                }
+            }
+        }
     }
 
     /** Randomize the game board */
-    // DIRT
-    // PLAYER
-    // ENEMY
-    // COIN
-    // ROCK
-    // EMPTY
-    // VOID
-    private void AddTileToList(List<TileType> list, TileType tile, int count) {
-        for (int i = 0; i < count; i++) {
-            list.add(tile);
-        }
-    }
     private void RandomizeTiles() throws Exception {
         List<TileType> queue = new ArrayList<>();
 
@@ -248,10 +272,17 @@ public class WorldState implements IWorldState {
         }
     }
 
+    private void AddTileToList(List<TileType> list, TileType tile, int count) {
+        for (int i = 0; i < count; i++) {
+            list.add(tile);
+        }
+    }
+
     private void CheckGameCompletion() throws Exception {
         // Check for over time limit
         if (_curTime > Settings.MAX_GAME_LENGTH) 
             _isComplete = true;
+
     }
 
     private void MovePlayer(int x, int y) throws Exception {
@@ -264,9 +295,33 @@ public class WorldState implements IWorldState {
         if (yPrime < 0 || yPrime >= Settings.MAP_SIZE)
             return;
 
-        TileType tmp = _getAtCoord(xPrime, yPrime);
-        _setAtCoord(xPrime, yPrime, _getAtCoord(player_X, player_Y));
-        _setAtCoord(player_X, player_Y, tmp);
+        TileType atNewSpot = _getAtCoord(xPrime, yPrime);
+
+        switch (atNewSpot) {
+            // Player dies, remove him from board
+            case ENEMY:
+                _isComplete = true;
+                _setAtCoord(x, y, TileType.EMPTY);
+                player_X = -1;
+                player_Y = -1;
+                break;
+
+            case ROCK:
+                // Do nothing, the player can't go here
+                break;
+
+            case COIN:
+            case DIRT:
+                // Increase score, move player to spot
+                _setAtCoord(xPrime, yPrime, TileType.PLAYER);
+                _setAtCoord(x, y, TileType.EMPTY);
+                _score += atNewSpot.getpointTotal();
+                break;
+
+            case VOID:
+                break;
+            default:
+        }
 
         player_X = xPrime;
         player_Y += yPrime;

@@ -3,6 +3,7 @@ import java.util.*;
 public class Program {
     //region Members
     private static ProgramType _type;
+    private static IPerceptron _cachedNetwork = null;
     //endregion
 
     //region ProgramType
@@ -190,10 +191,11 @@ public class Program {
                 int dim = Settings.MAP_SIZE;
                 IWorldState newState = new WorldState(dim, dim);
                 testSet.add(newState);
-                
+
             }
 
-            IAgent baseAgent = new DigAgent(Settings.NETWORK_STRUCTURE);
+            IAgent baseAgent = null;
+            baseAgent = new DigAgent((IPerceptron)((IGenetic)getNetwork()).PerfectCopy());
 
             GenAlg genAlg = new GenAlg(Settings.POPULATION_SIZE,
                                         baseAgent,
@@ -203,6 +205,9 @@ public class Program {
             double res = genAlg.Execute(Settings.EPOCHS, testSet);
 
             Logger.Gui(" Algorithm finished with final agent performance error: " + res);
+            Logger.Gui("  Saving Network to file");
+
+            SaveNetwork();
 
         } catch (Exception exc) {
             Logger.Error("Exception during genetic algorithm: " + exc.getMessage());
@@ -228,6 +233,9 @@ public class Program {
          using the cli*/
     private static void SetDefaults() throws Exception {
         
+        // Load the cached network
+        LoadCachedNetwork();
+
         // Special cases
         int mapSq = Settings.MAP_SIZE * Settings.MAP_SIZE;
         int defMapSq = Settings.DEFAULT_MAP_SIZE * Settings.DEFAULT_MAP_SIZE;
@@ -246,6 +254,38 @@ public class Program {
                 Settings.ENEMY_COUNT *= ratio;
                 break;
         }
+
+        // Set network input count for default structure
+        //  This is equal to the number of possible tiles
+        //   minus the void tiles which do not trigger
+        //   neuron activity.
+        int fovInputs = (TileType.values().length - 1) * Settings.AGENT_FOV * Settings.AGENT_FOV;
+        Settings.NETWORK_STRUCTURE[0] = fovInputs;
+        Settings.NETWORK_INPUT_COUNT = fovInputs;
+        Logger.Debug("Network structure changed to : " + Util.DisplayArray(Settings.NETWORK_STRUCTURE));
+
+    }
+    //endregion
+
+    //region Load/Save
+    private static void LoadCachedNetwork() throws Exception {
+        String fileContent = Util.ReadFile(Settings.NETWORK_FILE_NAME, StandardCharsets.UTF_8);
+
+        _cachedNetwork = new Perceptron(fileContent); 
+    }
+    private static void SaveNetwork() throws Exception {
+        WriteFile(((IXmlSerializable)getNetwork()).GetXml());
+    }
+    private static IPerceptron getNetwork() throws Exception {
+        if (_cachedNetwork == null) {
+            try {
+                LoadCachedNetwork();
+            } catch (Exception exc) {
+                Logger.Warn(" No network to load");
+                _cachedNetwork = new DigAgent(Settings.NETWORK_STRUCTURE);
+            }
+        }
+        return _cachedNetwork; 
     }
     //endregion
 }

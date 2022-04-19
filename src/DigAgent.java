@@ -24,7 +24,11 @@ public class DigAgent implements IAgent {
         //region IAgent
         /** Return this agents action for a given world state */
         public IDeltaWorldState GetAction(IWorldState currentState) throws Exception {
-            return new DeltaWorldState(_perceptron.FeedForward(currentState.getEncoding()));
+            double[] encoding = currentState.getEncoding();
+
+            double[] networkOutput = _perceptron.FeedForward(encoding);
+
+            return new DeltaWorldState(networkOutput);
         }
         //endregion
 

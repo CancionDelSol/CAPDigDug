@@ -1,7 +1,6 @@
-import java.text.DecimalFormat;
-import java.lang.Math;
-import java.util.Random;
-import java.util.Calendar;
+import java.text.*;
+import java.lang.*;
+import java.util.*;
 
 /**
  * Just holds some useful functions
@@ -64,5 +63,17 @@ public class Util {
         }
         bldr.append(String.format("%.4f]", array[array.length - 1]));
         return bldr.toString();
+    }
+
+    /** Helper method for reading file. Retrieved from online */
+    public static String ReadFile(String path, Charset encoding) throws IOException
+    {
+        byte[] encoded = Files.readAllBytes(Paths.get(path));
+        return new String(encoded, encoding);
+    }
+    public static void WriteFile(String path, String content) throws IOException {
+        FileWriter myWriter = new FileWriter(path);
+        myWriter.write(content);
+        myWriter.close();
     }
 }
