@@ -20,8 +20,12 @@ public class Program {
         Logger.Gui("Start Up");
 
         try {
+
             // Read command line args
             ProcessCLArgs(args);
+
+            // Setup global settings
+            SetDefaults();
 
             // Use the _type member to control flow
             if (_type == ProgramType.ALL || _type == ProgramType.UNITTEST) {
@@ -44,60 +48,98 @@ public class Program {
     
     /** Prcesses the command line arguments */
     private static void ProcessCLArgs(String[] args) throws Exception {
-        for (int i = 0; i < args.length; i++) {
-            switch (args[i].toUpperCase()) {
+        for (int i = 0; i < args.length;) {
+            String arg = args[i].toUpperCase();
+            Logger.Debug("Switch for " + arg);
+            switch (arg) {
+                // Set Unit test
                 case "-U":
                 case "-UNITTEST":
                     Logger.Debug("Setting program type to UNITTEST");
-                    _type = ProgramType.UNITTEST;
+                    _type = ProgramType.UNITTEST; i++;
                     break;
+
+                // Set Player Playthrough
                 case "-P":
                 case "-PLAYER":
                     Logger.Debug("Setting program type to PLAYER");
-                    _type = ProgramType.PLAYER;
+                    _type = ProgramType.PLAYER; i++;
                     break;
+
+                // Set Genetic algorithm
                 case "-G":
                 case "-GENETICALG":
                     Logger.Debug("Setting program type to GENALG");
-                    _type = ProgramType.GENALG;
+                    _type = ProgramType.GENALG; i++;
                     break;
+
+                // Read the mutation rate
                 case "-RATE":
                     if (i + 1 >= args.length)
                         Logger.Throw("Incomplete arguments for mutation rate");
                     
-                    Settings.MUTATION_RATE = Double.parseDouble(args[i + 1]);
+                    Settings.MUTATION_RATE = Double.parseDouble(args[++i]);
                     Logger.Debug("Setting mutation rate to: " + Settings.MUTATION_RATE);
                     break;
+                // Read Logger level
                 case "-L":
                     if (i + 1 >= args.length)
                         Logger.Throw("Incomplete arguments for log level");
 
-                    Logger.SetLevel(Logger.LogLevel.valueOf(args[i + 1].toUpperCase()));
+                    Logger.SetLevel(Logger.LogLevel.valueOf(args[++i].toUpperCase()));
                     Logger.Debug("Setting log level to: " + Logger.GetLevel());
                     break;
+
+                // Read the Epochs
                 case "-E":
                     if (i + 1 >= args.length)
                         Logger.Throw("Incomplete arguments for epochs");
 
-                    Settings.EPOCHS = Integer.parseInt(args[i + 1]);
+                    Settings.EPOCHS = Integer.parseInt(args[++i]);
                     Logger.Debug("Setting epochs to: " + Settings.EPOCHS);
                     break;
+
+                // Read the Population size
                 case "-POP":
                     if (i + 1 >= args.length)
                         Logger.Throw("Incomplete arguments for population size");
 
-                    Settings.POPULATION_SIZE = Integer.parseInt(args[i + 1]);
+                    Settings.POPULATION_SIZE = Integer.parseInt(args[++i]);
+
+                    if (Settings.POPULATION_SIZE < 1)
+                        Logger.Throw("Cannot have population size less than 1");
+
                     Logger.Debug("Setting population size to: " + Settings.POPULATION_SIZE);
                     break;
+
+                // Read map size
+                case "-M":
+                    if (i + 1 >= args.length)
+                        Logger.Throw("Incomplete arguments for map size");
+
+                    Settings.MAP_SIZE = Integer.parseInt(args[++i]);
+
+                    if (Settings.MAP_SIZE < 1)
+                        Logger.Throw("Cannot have map size less than 1");
+
+                    Logger.Debug("Setting map size to: " + Settings.MAP_SIZE);
+                    break;
+                
+                // Read the network structure
+                //  The user cannot specificy input and output length
+                //  so all the text refers to the hidden layers
                 case "-N":
                     if (i + 1 >= args.length)
-                        Logger.Throw("Incomplete arguments for population size");
+                        Logger.Throw("Incomplete arguments for network structure");
 
-                    String structure = args[i + 1];
+                    // Get the text entered by the user
+                    String structure = args[++i];
 
+                    // Remove brackets if included
                     structure = structure.replace("(", "");
                     structure = structure.replace(")", "");
 
+                    // Split by commas
                     String[] parts = structure.split(",");
                     Settings.NETWORK_STRUCTURE = new int[parts.length + 2];
 
@@ -105,16 +147,21 @@ public class Program {
                     Settings.NETWORK_STRUCTURE[0] = Settings.NETWORK_INPUT_COUNT;
 
                     // Set hidden layer
-                    for (int p = 1; p < parts.length - 1; p++) {
+                    for (int p = 1; p < parts.length; p++) {
                         Settings.NETWORK_STRUCTURE[i] = Integer.parseInt(parts[i]);
                     }
 
                     // Set output count
-                    Settings.NETWORK_STRUCTURE[parts.length - 1] = Settings.NETWORK_OUTPUT_COUNT;
+                    int fullLength = Settings.NETWORK_STRUCTURE.length;
+                    Settings.NETWORK_STRUCTURE[fullLength- 1] = Settings.NETWORK_OUTPUT_COUNT;
 
                     Logger.Debug("Setting network structure to: " + Util.DisplayArray(Settings.NETWORK_STRUCTURE));
                     break;
+                
+                // Throw exception for unrecognized argument
                 default:
+                    Logger.Error("Unrecognized argument: " + args[i]);
+                    i++;
                     break;
             }
         }
@@ -143,6 +190,7 @@ public class Program {
                 int dim = Settings.MAP_SIZE;
                 IWorldState newState = new WorldState(dim, dim);
                 testSet.add(newState);
+                
             }
 
             IAgent baseAgent = new DigAgent(Settings.NETWORK_STRUCTURE);
@@ -172,6 +220,32 @@ public class Program {
 
     private static void RunLive() throws Exception {
         Logger.Throw("TODO : Program.RunLive");
+    }
+
+    /** Set up default values 
+         At this point, the user
+         has already altered the settings
+         using the cli*/
+    private static void SetDefaults() throws Exception {
+        
+        // Special cases
+        int mapSq = Settings.MAP_SIZE * Settings.MAP_SIZE;
+        int defMapSq = Settings.DEFAULT_MAP_SIZE * Settings.DEFAULT_MAP_SIZE;
+        switch (Settings.MAP_SIZE) {
+            case (1) :
+                Logger.Throw("Not a very interesting setup");
+                break;
+            case (2):
+                Settings.AGENT_FOV = Math.min(Settings.MAX_AGENT_FOV, Settings.MAP_SIZE);
+                break;
+            default:
+                Settings.AGENT_FOV = Math.min(Settings.MAX_AGENT_FOV, Settings.MAP_SIZE);
+                int ratio = mapSq/defMapSq;
+                Settings.ROCK_COUNT *= ratio;
+                Settings.COIN_COUNT *= ratio;
+                Settings.ENEMY_COUNT *= ratio;
+                break;
+        }
     }
     //endregion
 }

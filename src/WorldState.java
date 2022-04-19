@@ -1,10 +1,22 @@
-import java.util.Arrays;
+import java.util.*;
 
 public class WorldState implements IWorldState {
+    //region PerceptronSupport
+    private int MOVE_LEFT = 0;
+    private int MOVE_RIGHT = 1;
+    private int MOVE_UP = 2;
+    private int MOVE_DOWN = 3;
+    private int SHOOT = 4;
+    //endregion
+
     //region Gameboard
-    private final int _x;
-    private final int _y;
-    private final TileType[] _tiles;
+    /** Members */
+    private long _score = 0L;
+    private boolean _isComplete = false;
+    private int _x, _y;
+    private int player_X, player_Y;
+    private TileType[] _tiles;
+    private List<TileType> _destroyed = new ArrayList<>();
     
     /** Return the tile piece at a given coordinate */
     private TileType _getAtCoord(int x, int y) throws Exception {
@@ -40,8 +52,6 @@ public class WorldState implements IWorldState {
 
         // Build a random map
         RandomizeTiles();
-
-        // TODO : WorldState.WorldState
     }
 
     /** Create a copy of an initializer world state */
@@ -72,11 +82,52 @@ public class WorldState implements IWorldState {
         return _curTime;
     }
     public boolean getIsComplete() throws Exception {
-        return CheckGameCompletion();
+        CheckGameCompletion();
+
+        return _isComplete;
     }
+
+    /** Apply a delta to this world state
+         using the neural network outputs */
     public void ApplyDelta(IDeltaWorldState dState) throws Exception {
+        // Increment the time
         _curTime++;
 
+        // Get network output
+        double[] networkOutput = dState.getDeltaEncoding();
+
+        // Read player movement output
+        //  0 : move left
+        //  1 : move right
+        //  2 : move up
+        //  3 : move down
+        double threshold = Settings.OUTPUT_FIRE_THRESHOLD;
+
+        // Move left
+        int dX = 0, dY = 0;
+        if (networkOutput[MOVE_LEFT] > threshold)
+            dX -= 1;
+
+        // Move right
+        if (networkOutput[MOVE_RIGHT] > threshold)
+            dX += 1;
+
+        // Move up
+        if (networkOutput[MOVE_UP] > threshold)
+            dY -= 1;
+        
+        // Move down
+        if (networkOutput[MOVE_DOWN] > threshold)
+            dY += 1;
+        
+        MovePlayer(dX, dY);
+
+        // Check for player contact
+
+        // Physics update
+        // Rocks fall
+        // TODO : ROCKS FALL
+        
         // TODO : WorldState.ApplyDelta
     }
     public IWorldState clone() {
@@ -90,7 +141,40 @@ public class WorldState implements IWorldState {
     //endregion
 
     //region Object
-    
+    /** Print grid to screen */
+    public void Display() {
+        String colSep = "| ";
+
+        // Iterate through the items
+        String buffer = "";
+        for (int i = 0; i < _tiles.length; i++) {
+            if ((i+1)%_x == 0)
+                Logger.Gui(getRowSep());
+
+            buffer = buffer + colSep + _tiles[i].getDisplay() + " ";
+
+            if ((i+1)%_x == 0) {
+                Logger.Gui(buffer + "|");
+                buffer = "";
+            }
+        }
+        Logger.Gui(getRowSep() + "\n");
+    }
+
+    private String _rowSep;
+    private String getRowSep() {
+        if (_rowSep == null) {
+            String block = "+---";
+            StringBuilder bldr = new StringBuilder();
+            for (int i = 0; i < _x; i++) {
+                bldr.append(block);
+            }
+            bldr.append("+");
+            _rowSep = bldr.toString();
+        }
+
+        return _rowSep;
+    }
     //endregion
 
     //region IErrorFunction
@@ -123,20 +207,69 @@ public class WorldState implements IWorldState {
     }
 
     /** Randomize the game board */
+    // DIRT
+    // PLAYER
+    // ENEMY
+    // COIN
+    // ROCK
+    // EMPTY
+    // VOID
+    private void AddTileToList(List<TileType> list, TileType tile, int count) {
+        for (int i = 0; i < count; i++) {
+            list.add(tile);
+        }
+    }
     private void RandomizeTiles() throws Exception {
-        // Place the player in a random spot
-        // Place a few random enemies
-        // Place a few rocks on the map
-        // Place a few coins on the map
+        List<TileType> queue = new ArrayList<>();
+
+        // Add player tile
+        queue.add(TileType.PLAYER);
+
+        // Add Enemy tiles
+        AddTileToList(queue, TileType.ENEMY, Settings.ENEMY_COUNT);
+
+        // Add Coin tiles
+        AddTileToList(queue, TileType.COIN, Settings.COIN_COUNT);
+
+        // Add Rock tiles
+        AddTileToList(queue, TileType.ROCK, Settings.ROCK_COUNT);
+
+        // Add Dirt tiles
+        AddTileToList(queue, TileType.DIRT, Settings.DIRT_COUNT);
+
+        // Fill the rest with Empty
+        AddTileToList(queue, TileType.EMPTY, (Settings.MAP_SIZE * Settings.MAP_SIZE) - queue.size());   
+
+        // Randomly pull from list and place into _tiles array
+        for (int i = 0; i < Settings.MAP_SIZE * Settings.MAP_SIZE; i++) {
+            int x = Util.RandInt(0, queue.size());
+            TileType pulled = queue.remove(x);
+            _tiles[i] = pulled;
+        }
     }
 
-    private boolean CheckGameCompletion() throws Exception {
-        // TODO : Check if game is complete
-        // Only allow 10 frames for now
-        if (_curTime > 10L) 
-            return true;
+    private void CheckGameCompletion() throws Exception {
+        // Check for over time limit
+        if (_curTime > Settings.MAX_GAME_LENGTH) 
+            _isComplete = true;
+    }
 
-        return false;
+    private void MovePlayer(int x, int y) throws Exception {
+        int xPrime = player_X + x;
+        int yPrime = player_Y + y;
+
+        if ( xPrime < 0 || xPrime >= Settings.MAP_SIZE)
+            return;
+        
+        if (yPrime < 0 || yPrime >= Settings.MAP_SIZE)
+            return;
+
+        TileType tmp = _getAtCoord(xPrime, yPrime);
+        _setAtCoord(xPrime, yPrime, _getAtCoord(player_X, player_Y));
+        _setAtCoord(player_X, player_Y, tmp);
+
+        player_X = xPrime;
+        player_Y += yPrime;
     }
     //endregion
 }

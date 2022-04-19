@@ -28,13 +28,16 @@ generate: createjar
 	@echo "Complete"
 
 run: generate
+	@clear
 	@java -jar DigDug.jar
 
 debug: generate
-	@java -jar DigDug.jar -UNITTEST -l DEBUG -rate 1.0
+	@clear
+	@java -jar DigDug.jar -UNITTEST -l DEBUG -rate 1.0 -M 10
 
 train: generate
-	@java -jar DigDug.jar -GENETICALG -l DEBUG -rate .5 -epochs 10 -pop 5
+	@clear
+	@java -jar DigDug.jar -GENETICALG -l DEBUG -rate .5 -EPOCHS 10 -pop 5 -M 7
 
 clean:
 	@echo "Cleaning up..."

@@ -4,12 +4,13 @@ import java.util.*;
 public class UnitTests {
     //region Run all
     public static void RunAll() throws Exception{
-        MatrixMultiplicationTestOne();
-        MatrixMultiplicationTestTwo();
-        MatrixAdditionSubtractionTest();
-        PerceptronXmlSerializationTest();
-        PerceptronGeneticTest();
-        PerceptronViabilityTest();
+        // MatrixMultiplicationTestOne();
+        // MatrixMultiplicationTestTwo();
+        // MatrixAdditionSubtractionTest();
+        // PerceptronXmlSerializationTest();
+        // PerceptronGeneticTest();
+        // PerceptronViabilityTest();
+        WorldStateTest();
     }
     //endregion
 
@@ -212,7 +213,7 @@ public class UnitTests {
         // In this case we are training a perceptron
         //  to classify a coordinate as above or below
         //  the line y = x
-        if (res <= Values.Epsilon)
+        if (res <= .01)
             LogResult(testName, true, "Error: " + res);
         else
             LogResult(testName, false, "Error: " + res);
@@ -334,6 +335,14 @@ public class UnitTests {
         }
         return rVal;
     };
+    //endregion
+
+    //region WorldState
+    private static void WorldStateTest() throws Exception {
+        WorldState testRandomState = new WorldState(Settings.MAP_SIZE, Settings.MAP_SIZE);
+
+        testRandomState.Display();
+    }
     //endregion
 
     //region Private

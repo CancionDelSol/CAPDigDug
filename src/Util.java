@@ -27,6 +27,13 @@ public class Util {
         return ((max - min) * _rand.nextDouble()) + min;
     }
 
+    public static int RandInt(int min, int max) {
+        int range = max - min;
+        int randInt = Math.abs(_rand.nextInt()%range);
+
+        return randInt + min;
+    }
+
     public static double Mag(double[] vec) {
         double sum = 0.0;
         for (int i = 0; i < vec.length; i++) {

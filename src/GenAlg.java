@@ -77,7 +77,9 @@ public class GenAlg {
             //  performing agent
             IAgent newMember = _source;
             for (int curGeneticIndex = 0; curGeneticIndex < _popSize; curGeneticIndex++) {
-
+                
+                Logger.Debug("  Running Genetic at index: " + curGeneticIndex);
+                
                 // Track the average performance
                 double avgPerformance = 0.0;
                 for (IWorldState initialState : inputs) {
