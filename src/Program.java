@@ -77,6 +77,11 @@ public class Program {
                     _type = ProgramType.GENALG;
                     break;
 
+                case "-LIVE":
+                case "-LIVERUN":
+                    Logger.Debug("Setting program type to LIVERUN");
+                    _type = ProgramType.LIVERUN;
+                    break;
                 // Read the mutation rate
                 case "-RATE":
                     if (i + 1 >= args.length)
@@ -206,14 +211,16 @@ public class Program {
                                         WorldState.digDugEvaluation);
 
             // Run in chunks so we can save network
+            double res = Values.VeryLarge;
             for (int i = 0; i < Settings.EPOCHS/10; i++) {
-                double res = genAlg.Execute(Settings.EPOCHS, testSet);
+                res = genAlg.Execute(Settings.EPOCHS, testSet);
 
-                Logger.Gui(" Algorithm finished with final agent performance error: " + res);
                 Logger.Gui("  Saving Network to file");
 
                 SaveNetwork();
             }
+            
+            Logger.Gui(" Algorithm finished with final agent performance error: " + res);
             
         } catch (Exception exc) {
             Logger.Error("Exception during genetic algorithm: " + exc.getMessage());
@@ -223,14 +230,31 @@ public class Program {
     private static void RunPlayerSession() throws Exception {
         Logger.Gui("Running Player Session");
         try {
-            Logger.Throw("TODO : Program.RunPlayerSession");
+            Logger.Throw("TODO : RunPlayerSession");
         } catch (Exception exc) {
             Logger.Error("Exception during player session: " + exc.getMessage());
         }
     }
 
     private static void RunLive() throws Exception {
-        Logger.Throw("TODO : Program.RunLive");
+        Logger.Gui("Running AI playthrough");
+        try {
+            IPerceptron network = getNetwork();
+            IAgent agent = new DigAgent(network);
+
+            IWorldState map = new WorldState(Settings.MAP_SIZE, Settings.MAP_SIZE);
+
+            while (!map.getIsComplete()) {
+                ((WorldState)map).Display();
+                IDeltaWorldState action = agent.GetAction(map);
+                Logger.Debug("Action: " + Util.DisplayArray(action.getDeltaEncoding()));
+                Logger.Debug("Score: " + ((WorldState)map).getScore());
+                map.ApplyDelta(action);
+                Thread.sleep(1000);
+            }
+        } catch (Exception exc) {
+            Logger.Throw("Exception during AI runthrough: " + exc.getMessage());
+        }
     }
 
     /** Set up default values 
@@ -281,11 +305,14 @@ public class Program {
         if (_cachedNetwork.getStructure()[0] != Settings.NETWORK_INPUT_COUNT) {
             Logger.Warn("Incompatible network loaded, creating new one");
             _cachedNetwork = new Perceptron(Settings.NETWORK_STRUCTURE);
-        }   
+            return;
+        }
+        Logger.Debug("Network loaded: " + Util.DisplayArray(_cachedNetwork.getStructure()));
     }
 
     private static void SaveNetwork() throws Exception {
         Util.WriteFile(Settings.NETWORK_FILE_NAME, ((IXmlSerializable)getNetwork()).WriteXml());
+        Logger.Info("Network Saved");
     }
     
     private static IPerceptron getNetwork() throws Exception {

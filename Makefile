@@ -4,6 +4,7 @@ SOURCE_DIR := src
 BUILD_DIR := src/build
 CLASSES_OUTPUT := src/build/classes
 JAVA_FILES := $(find . -name '*.java')
+NET_STRUCT := 10:7:8
 
 classpath:
 	@mkdir -p $(CLASSES_OUTPUT)
@@ -37,7 +38,11 @@ debug: generate
 
 train: generate
 	@clear
-	@java -jar DigDug.jar -GENETICALG -l DEBUG -rate .5 -EPOCHS 10000 -pop 25 -M 5 -N 10:7:8
+	@java -jar DigDug.jar -GENETICALG -l DEBUG -rate 1.0 -EPOCHS 100 -pop 25 -M 5 -N $(NET_STRUCT)
+
+liverun: generate
+	@clear
+	@java -jar DigDug.jar -LIVERUN -l DEBUG -M 5 -N $(NET_STRUCT)
 
 clean:
 	@echo "Cleaning up..."

@@ -64,9 +64,6 @@ public class GenAlg {
         // Iterate over epochs
         int curEpoch = 0;
         do {
-            if (curEpoch%100 == 0)
-                Logger.Verbose(" Epoch : " + curEpoch);
-
             // Run each genetic (network) for each world state
             //  and take the average performance
             IAgent replacement = _source;
@@ -105,8 +102,8 @@ public class GenAlg {
             }
             _source = replacement;
 
-            if (curEpoch%100 == 0)
-                Logger.Verbose("  Best Error: " + bestError);
+            if (curEpoch%(Settings.EPOCHS/10) == 0)
+                Logger.Verbose("Epoch: " + curEpoch + " | Best Error: " + bestError);
 
         } while (bestError > threshold && curEpoch++ < epochs);
 

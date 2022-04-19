@@ -19,7 +19,12 @@ public class WorldState implements IWorldState {
     private int player_X, player_Y;
     private TileType[] _tiles;
     private List<TileType> _destroyed = new ArrayList<>();
-    
+
+    /** Return the player's score */
+    public long getScore() {
+        return _score;
+    }
+
     /** Return the tile piece at a given coordinate */
     private TileType GetTileType(int x, int y) throws Exception {
         int index = _getIndex(x, y, false);
@@ -117,32 +122,24 @@ public class WorldState implements IWorldState {
         //  3 : move down
         double threshold = Settings.OUTPUT_FIRE_THRESHOLD;
 
-        // Move left
+        // Move left or right
         int dX = 0, dY = 0;
-        if (networkOutput[MOVE_LEFT] > threshold)
-            dX -= 1;
+        if (networkOutput[MOVE_LEFT] > threshold || networkOutput[MOVE_RIGHT] > threshold)
+            dX = networkOutput[MOVE_LEFT] > networkOutput[MOVE_RIGHT] ? -1 : 1;
 
-        // Move right
-        if (networkOutput[MOVE_RIGHT] > threshold)
-            dX += 1;
-
-        // Move up
-        if (networkOutput[MOVE_UP] > threshold)
-            dY -= 1;
+        // Move up or down
+        if (networkOutput[MOVE_UP] > threshold || networkOutput[MOVE_DOWN] > threshold)
+            dY = networkOutput[MOVE_UP] > networkOutput[MOVE_DOWN] ? -1 : 1;
         
-        // Move down
-        if (networkOutput[MOVE_DOWN] > threshold)
-            dY += 1;
         
         MovePlayer(dX, dY);
 
         // Check for player contact
 
-        // Physics update
-        // Rocks fall
+        // TODO : Enemy Movement
+
         // TODO : ROCKS FALL
         
-        // TODO : WorldState.ApplyDelta
     }
     public IWorldState clone() {
         try {
@@ -268,9 +265,20 @@ public class WorldState implements IWorldState {
 
         // Randomly pull from list and place into _tiles array
         for (int i = 0; i < Settings.MAP_SIZE * Settings.MAP_SIZE; i++) {
-            int x = Util.RandInt(0, queue.size());
-            TileType pulled = queue.remove(x);
-            _tiles[i] = pulled;
+            
+        }
+
+        for (int x = 0; x < Settings.MAP_SIZE; x++) {
+            for (int y = 0; y < Settings.MAP_SIZE; y++) {
+                int randIndex = Util.RandInt(0, queue.size());
+                TileType pulled = queue.remove(randIndex);
+
+                if (pulled == TileType.PLAYER) {
+                    player_X = x;
+                    player_Y = y;
+                }
+                _setAtCoord(x, y, pulled);
+            }
         }
     }
 
@@ -292,10 +300,13 @@ public class WorldState implements IWorldState {
         int yPrime = player_Y + y;
 
         if ( xPrime < 0 || xPrime >= Settings.MAP_SIZE)
-            return;
+            xPrime = player_X;
         
         if (yPrime < 0 || yPrime >= Settings.MAP_SIZE)
-            return;
+            yPrime = player_Y;
+
+        
+        Logger.Debug("Moving player from " + Util.DisplayCoord(player_X, player_Y) +" to " + Util.DisplayCoord(xPrime, yPrime));
 
         TileType atNewSpot = _getAtCoord(xPrime, yPrime);
 
@@ -306,27 +317,29 @@ public class WorldState implements IWorldState {
                 _setAtCoord(x, y, TileType.EMPTY);
                 player_X = -1;
                 player_Y = -1;
+                
+                Logger.Debug("Dead Player");
                 break;
 
             case ROCK:
                 // Do nothing, the player can't go here
+                Logger.Debug("Rock in the way");
                 break;
 
             case COIN:
             case DIRT:
                 // Increase score, move player to spot
                 _setAtCoord(xPrime, yPrime, TileType.PLAYER);
-                _setAtCoord(x, y, TileType.EMPTY);
+                _setAtCoord(player_X, player_Y, TileType.EMPTY);
                 _score += atNewSpot.getpointTotal();
+                Logger.Debug("Collected: " + atNewSpot.toString());
+                
                 break;
 
             case VOID:
                 break;
             default:
         }
-
-        player_X = xPrime;
-        player_Y += yPrime;
     }
     //endregion
 }
