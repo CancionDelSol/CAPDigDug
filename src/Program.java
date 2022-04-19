@@ -193,34 +193,47 @@ public class Program {
         try {
             // Create test training set
             List<IWorldState> testSet = new ArrayList<IWorldState>();
-            for (int i = 0; i < Settings.SET_SIZE; i++) {
 
-                // Generate a random world state
-                int dim = Settings.MAP_SIZE;
-                IWorldState newState = new WorldState(dim, dim);
-                testSet.add(newState);
+            // Split all epochs into 10 groups
+            double res = Values.VeryLarge;
+            for (int i = 0; i < Settings.EPOCHS/10; i++) {
+                testSet.clear();
 
-            }
+                // Setup new world states for training
+                for (int curWorld = 0; curWorld < Settings.SET_SIZE; curWorld++) {
 
-            IAgent baseAgent = null;
-            baseAgent = new DigAgent((IPerceptron)((IGenetic)getNetwork()).PerfectCopy());
+                    // Generate a random world state
+                    int dim = Settings.MAP_SIZE;
+                    IWorldState newState = new WorldState(dim, dim);
+                    testSet.add(newState);
 
-            GenAlg genAlg = new GenAlg(Settings.POPULATION_SIZE,
+                }
+
+                // Get base agent used for creating populations
+                IAgent baseAgent = new DigAgent((IPerceptron)((IGenetic)getNetwork()).PerfectCopy());
+
+                // Create genetic algorithm handler
+                GenAlg genAlg = new GenAlg(Settings.POPULATION_SIZE,
                                         baseAgent,
                                         Settings.MUTATION_RATE,
                                         WorldState.digDugEvaluation);
 
-            // Run in chunks so we can save network
-            double res = Values.VeryLarge;
-            for (int i = 0; i < Settings.EPOCHS/10; i++) {
-                res = genAlg.Execute(Settings.EPOCHS, testSet);
+                // Execute Genetic algorithm
+                res = genAlg.Execute(Settings.EPOCHS/10, testSet);
+
+                // Save the resulting network
+                _cachedNetwork = ((DigAgent)genAlg.getBestAgent()).getNetwork();
 
                 Logger.Gui("  Saving Network to file");
 
+                // Write network to disk    
                 SaveNetwork();
+
             }
             
             Logger.Gui(" Algorithm finished with final agent performance error: " + res);
+
+            RunLive();
             
         } catch (Exception exc) {
             Logger.Error("Exception during genetic algorithm: " + exc.getMessage());
@@ -247,11 +260,12 @@ public class Program {
             while (!map.getIsComplete()) {
                 ((WorldState)map).Display();
                 IDeltaWorldState action = agent.GetAction(map);
-                Logger.Debug("Action: " + Util.DisplayArray(action.getDeltaEncoding()));
                 Logger.Debug("Score: " + ((WorldState)map).getScore());
+                Logger.Debug("Action: " + Util.DisplayArray(action.getDeltaEncoding()));
                 map.ApplyDelta(action);
                 Thread.sleep(1000);
             }
+            Logger.Gui("Game complete");
         } catch (Exception exc) {
             Logger.Throw("Exception during AI runthrough: " + exc.getMessage());
         }
@@ -275,8 +289,9 @@ public class Program {
                 break;
             default:
                 Settings.AGENT_FOV = Math.min(Settings.MAX_AGENT_FOV, Settings.MAP_SIZE);
-                int ratio = mapSq/defMapSq;
+                int ratio = mapSq/defMapSq; Logger.Debug("Ratio: " + ratio);
                 Settings.ROCK_COUNT *= ratio;
+                Settings.DIRT_COUNT *= ratio; Logger.Debug("Dirt count: " + Settings.DIRT_COUNT);
                 Settings.COIN_COUNT *= ratio;
                 Settings.ENEMY_COUNT *= ratio;
                 break;
@@ -288,8 +303,8 @@ public class Program {
         //   neuron activity.
         Logger.Debug("Agent FOV: " + Settings.AGENT_FOV);
         int fovInputs = (TileType.values().length - 1) * Settings.AGENT_FOV * Settings.AGENT_FOV;
-        Settings.NETWORK_STRUCTURE[0] = fovInputs;
-        Settings.NETWORK_INPUT_COUNT = fovInputs;
+        Settings.NETWORK_INPUT_COUNT = fovInputs + 1;
+        Settings.NETWORK_STRUCTURE[0] = Settings.NETWORK_INPUT_COUNT;
         Logger.Debug("Network structure changed to : " + Util.DisplayArray(Settings.NETWORK_STRUCTURE));
 
     }

@@ -102,7 +102,7 @@ public class GenAlg {
             }
             _source = replacement;
 
-            if (curEpoch%(Settings.EPOCHS/10) == 0)
+            if (curEpoch%(Settings.EPOCHS/100) == 0)
                 Logger.Verbose("Epoch: " + curEpoch + " | Best Error: " + bestError);
 
         } while (bestError > threshold && curEpoch++ < epochs);

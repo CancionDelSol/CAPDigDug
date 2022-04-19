@@ -42,13 +42,13 @@ public class WorldState implements IWorldState {
 
     /** Return the index in the _values array */
     private int _getIndex(int x, int y, boolean throwExc) throws Exception {
+        
         int index = (y * _x) + x;
-        if (index < 0 || index >= _tiles.length) {
+        if (x < 0 || x >= _x || y < 0 || y >= _y)
             if (throwExc)
                 Logger.Throw("Out of bounds [" + index + "]: (" + x + ", " + y + ") ");
             else
                 return -1;
-        }
         
         return index;
     }
@@ -109,6 +109,8 @@ public class WorldState implements IWorldState {
     /** Apply a delta to this world state
          using the neural network outputs */
     public void ApplyDelta(IDeltaWorldState dState) throws Exception {
+        _encodedState = null;
+
         // Increment the time
         _curTime++;
 
@@ -124,13 +126,31 @@ public class WorldState implements IWorldState {
 
         // Move left or right
         int dX = 0, dY = 0;
-        if (networkOutput[MOVE_LEFT] > threshold || networkOutput[MOVE_RIGHT] > threshold)
-            dX = networkOutput[MOVE_LEFT] > networkOutput[MOVE_RIGHT] ? -1 : 1;
+        double highestVal = Values.VerySmall;
+        int highestIndex = -1;
+        for (int i = 0; i < 4; i++) {
+            if (networkOutput[i] > highestVal) {
+                highestIndex = i;
+                highestVal = networkOutput[i];
+            }
+        }
 
-        // Move up or down
-        if (networkOutput[MOVE_UP] > threshold || networkOutput[MOVE_DOWN] > threshold)
-            dY = networkOutput[MOVE_UP] > networkOutput[MOVE_DOWN] ? -1 : 1;
-        
+        if (highestVal > threshold) {
+            switch(highestIndex) {
+                case 0:
+                    dX = -1;
+                    break;
+                case 1:
+                    dX = 1;
+                    break;
+                case 2:
+                    dY = -1;
+                    break;
+                case 3:
+                    dY = 1;
+                    break;
+            }
+        }
         
         MovePlayer(dX, dY);
 
@@ -228,17 +248,26 @@ public class WorldState implements IWorldState {
 
         // Create a circular view of the current map state
         //  by iterating over a square around the player,
-        //  and checking to see if it is 
+        //  and checking to see if it is
+        int inArray = 0;
+        int perTile = TileType.values().length - 1;
         for (int x = 0; x < Settings.AGENT_FOV; x++) {
             for (int y = 0; y < Settings.AGENT_FOV; y++) {
-                TileType atIndex = GetTileType(x - Settings.AGENT_FOV/2, y - Settings.AGENT_FOV/2);
+                int povX = (x - Settings.AGENT_FOV/2) + player_X;
+                int povY = (y - Settings.AGENT_FOV/2) + player_Y;
+                TileType atIndex = GetTileType(povX, povY);
 
                 if (atIndex != TileType.VOID) {
-                    int netIndex = x * y + atIndex.ordinal();
+                    int netIndex = (inArray * perTile) + atIndex.ordinal();
                     _encodedState[netIndex] = 1.0;
+                } else {
                 }
+                inArray++;
             }
         }
+        int curIndex = inArray * perTile;
+        _encodedState[curIndex] = Math.sin(_curTime * Values.PI/4.0);
+        Logger.Debug("State: " + Util.DisplayArray(_encodedState));
     }
 
     /** Randomize the game board */
@@ -247,7 +276,7 @@ public class WorldState implements IWorldState {
 
         // Add player tile
         queue.add(TileType.PLAYER);
-
+        
         // Add Enemy tiles
         AddTileToList(queue, TileType.ENEMY, Settings.ENEMY_COUNT);
 
@@ -264,10 +293,6 @@ public class WorldState implements IWorldState {
         AddTileToList(queue, TileType.EMPTY, (Settings.MAP_SIZE * Settings.MAP_SIZE) - queue.size());   
 
         // Randomly pull from list and place into _tiles array
-        for (int i = 0; i < Settings.MAP_SIZE * Settings.MAP_SIZE; i++) {
-            
-        }
-
         for (int x = 0; x < Settings.MAP_SIZE; x++) {
             for (int y = 0; y < Settings.MAP_SIZE; y++) {
                 int randIndex = Util.RandInt(0, queue.size());
@@ -305,25 +330,20 @@ public class WorldState implements IWorldState {
         if (yPrime < 0 || yPrime >= Settings.MAP_SIZE)
             yPrime = player_Y;
 
-        
-        Logger.Debug("Moving player from " + Util.DisplayCoord(player_X, player_Y) +" to " + Util.DisplayCoord(xPrime, yPrime));
-
         TileType atNewSpot = _getAtCoord(xPrime, yPrime);
 
         switch (atNewSpot) {
             // Player dies, remove him from board
             case ENEMY:
                 _isComplete = true;
-                _setAtCoord(x, y, TileType.EMPTY);
+                _setAtCoord(player_X, player_Y, TileType.EMPTY);
                 player_X = -1;
                 player_Y = -1;
                 
-                Logger.Debug("Dead Player");
                 break;
 
             case ROCK:
                 // Do nothing, the player can't go here
-                Logger.Debug("Rock in the way");
                 break;
 
             case COIN:
@@ -331,11 +351,16 @@ public class WorldState implements IWorldState {
                 // Increase score, move player to spot
                 _setAtCoord(xPrime, yPrime, TileType.PLAYER);
                 _setAtCoord(player_X, player_Y, TileType.EMPTY);
+                player_X = xPrime;
+                player_Y = yPrime;
                 _score += atNewSpot.getpointTotal();
-                Logger.Debug("Collected: " + atNewSpot.toString());
-                
                 break;
-
+            case EMPTY:
+                _setAtCoord(xPrime, yPrime, TileType.PLAYER);
+                _setAtCoord(player_X, player_Y, TileType.EMPTY);
+                player_X = xPrime;
+                player_Y = yPrime;
+                break;
             case VOID:
                 break;
             default:

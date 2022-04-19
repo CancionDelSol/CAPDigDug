@@ -4,6 +4,7 @@ public class Values {
     //  when iterating over a sequence
     public static final double VerySmall = -1E8;
     public static final double VeryLarge = 1E8;
+    public static final double PI = 3.141592654;
 
     // Very tiny value used for avoid divide by
     //  zero scenarios

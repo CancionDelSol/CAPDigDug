@@ -45,4 +45,7 @@ public class DigAgent implements IAgent {
             return new DigAgent(newP);
         }
         //endregion
+
+        //region Locals
+        IPerceptron getNetwork() { return _perceptron; }
 }
