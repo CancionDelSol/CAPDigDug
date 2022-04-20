@@ -6,49 +6,98 @@ public class Logger {
     //endregion
 
     //region Logger
-    public static void SetLevel(LogLevel level) {
-        _logLevel = level;
-    }
-    public static LogLevel GetLevel() { return _logLevel; }
+    /**
+     * Level property
+     */
+    public static void setLevel(LogLevel level) { _logLevel = level; }
+    
+    /**
+     * Level property
+     */
+    public static LogLevel getLevel() { return _logLevel; }
+
+    /**
+     * Log message and throw exception
+     */
     public static void Throw(String msg) throws Exception {
         Write(LogLevel.ERROR, msg);
         throw new Exception(msg);
     }
+
+    /**
+     * Debug log
+     */
     public static void Debug(String msg) {
         Write(LogLevel.DEBUG, msg);
     }
+
+    /**
+     * Verbose log
+     */
     public static void Verbose(String msg) {
         Write(LogLevel.VERBOSE, msg);
     }
+
+    /**
+     * Warning log
+     */
     public static void Warn(String msg) {
         Write(LogLevel.WARN, msg);
     }
+
+    /**
+     * Error log
+     */
     public static void Error(String msg) {
         Write(LogLevel.ERROR, msg);
     }
+
+    /**
+     * Information log
+     */
     public static void Info(String msg) {
         Write(LogLevel.INFO, msg);
     }
+
+    /**
+     * Graphical user interface log
+     */
     public static void Gui(String msg) {
         Write(LogLevel.GUI, msg);
     }
     //endregion
 
     //region Private
-    private static String GetNow() {
+    /**
+     * Now property
+     */
+    private static String getNow() {
         return new Date().toString();
     }
+
+    /**
+     * Write message if 
+     *  log level permits
+     * @param level The message log level
+     * @param msg The message
+     */
     private static void Write(LogLevel level, String msg) {
         if (!_logLevel.HasLevel(level))
             return;
 
         PrintToScreen(level, msg);
     }
+
+    /**
+     * Print text to screen
+     * @param level The message log level
+     * @param msg The message
+     */
     private static void PrintToScreen(LogLevel level, String msg) {
         System.out.println(
             String.format(
                 "%s | [%8s] : %s",
-                GetNow(),
+                getNow(),
                 level.toString(),
                 msg
             )
@@ -57,6 +106,9 @@ public class Logger {
     //endregion
 
     //region Level
+    /**
+     * Log level enum
+     */
     public enum LogLevel {
         DEBUG(1),
         VERBOSE(2),

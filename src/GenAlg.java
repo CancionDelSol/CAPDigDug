@@ -102,13 +102,16 @@ public class GenAlg {
             _source = replacement;
 
             if (curEpoch%(epochs/10) == 0)
-                Logger.Verbose("Epoch: " + curEpoch + " | Best Error: " + bestError);
+                Logger.Info(" Epoch: " + curEpoch + " | Best Error: " + bestError);
 
         } while (bestError > threshold && curEpoch++ < epochs);
 
         return bestError;
     }
 
+    /** 
+     * Validate the Algorithm setup
+     */
     private void ValidateSetup() throws Exception {
         Logger.Verbose("Validating Setup");
 
@@ -122,12 +125,15 @@ public class GenAlg {
             Logger.Throw("No source genetic");
 
         if (_mutationRate < Values.Epsilon)
-            Logger.Throw("Mutation rate too small");
+            Logger.Throw("Mutation rate too small: " + _mutationRate);
 
         Logger.Verbose(" Setup validated");
     }
     //endregion
 
+    /**
+     * Error function lamda interface
+     */
     public interface IErrorFunction {
         double GetError(IWorldState state);
     }

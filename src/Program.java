@@ -8,9 +8,10 @@ public class Program {
     //endregion
 
     //region ProgramType
-    /** Enum describing what steps to run */
+    /**
+     * Enum describing what steps to run
+     */
     private enum ProgramType {
-        ALL,      // Run UNITTEST|GENALG|LIVERUN
         UNITTEST, // Run Unit test suite
         GENALG,   // Run the genetic algorithm
         LIVERUN,  // Run a live performance of the network on disc
@@ -32,13 +33,13 @@ public class Program {
             SetDefaults();
 
             // Use the _type member to control flow
-            if (_type == ProgramType.ALL || _type == ProgramType.UNITTEST) {
+            if (_type == ProgramType.UNITTEST) {
                 RunUnitTests();
             }
-            if (_type == ProgramType.ALL || _type == ProgramType.GENALG) {
+            if (_type == ProgramType.GENALG) {
                 RunGeneticAlgorithm();
             }
-            if (_type == ProgramType.ALL || _type == ProgramType.LIVERUN) {
+            if (_type == ProgramType.LIVERUN) {
                 RunLive();
             }
             if (_type == ProgramType.PLAYER) {
@@ -70,20 +71,20 @@ public class Program {
                 // Set Player Playthrough
                 case "-P":
                 case "-PLAYER":
-                    Logger.Debug("Setting program type to PLAYER");
-                    _type = ProgramType.PLAYER; i++;
+                    Logger.Debug("Program type set to PLAYER");
+                    _type = ProgramType.PLAYER;
                     break;
 
                 // Set Genetic algorithm
                 case "-G":
                 case "-GENETICALG":
-                    Logger.Debug("Setting program type to GENALG");
+                    Logger.Info("Program type set to GENALG");
                     _type = ProgramType.GENALG;
                     break;
 
                 case "-LIVE":
                 case "-LIVERUN":
-                    Logger.Debug("Setting program type to LIVERUN");
+                    Logger.Info("Program type set to LIVERUN");
                     _type = ProgramType.LIVERUN;
                     break;
                 // Read the mutation rate
@@ -91,8 +92,15 @@ public class Program {
                     if (i + 1 >= args.length)
                         Logger.Throw("Incomplete arguments for mutation rate");
                     
-                    Settings.MUTATION_RATE = Double.parseDouble(args[i + 1]);
-                    Logger.Debug("Setting mutation rate to: " + Settings.MUTATION_RATE);
+                    String mArg = args[i + 1];
+                    double mRate = Settings.MUTATION_RATE;
+                    try {
+                        mRate = Double.parseDouble(mArg);
+                    } catch (Exception exc) {
+                        Logger.Throw("Incorrect mutation rate argument: " + mArg);
+                    }
+                    Settings.MUTATION_RATE = mRate;
+                    Logger.Info("Mutation rate set to: " + Settings.MUTATION_RATE);
                     break;
 
                 // Read Logger level
@@ -100,8 +108,15 @@ public class Program {
                     if (i + 1 >= args.length)
                         Logger.Throw("Incomplete arguments for log level");
 
-                    Logger.SetLevel(Logger.LogLevel.valueOf(args[i + 1].toUpperCase()));
-                    Logger.Debug("Setting log level to: " + Logger.GetLevel());
+                    String loggingArg = args[i + 1].toUpperCase();
+                    Logger.LogLevel lvl = Logger.LogLevel.GUI;
+                    try {
+                        lvl = Logger.LogLevel.valueOf(loggingArg);
+                    } catch (Exception exc) {
+                        Logger.Throw("Incorrect logging level argument: " + loggingArg);
+                    }
+                    Logger.setLevel(lvl);
+                    Logger.Info("Log level set to: " + Logger.getLevel());
                     break;
 
                 // Read the Epochs
@@ -110,8 +125,15 @@ public class Program {
                     if (i + 1 >= args.length)
                         Logger.Throw("Incomplete arguments for epochs");
 
-                    Settings.EPOCHS = Integer.parseInt(args[i + 1]);
-                    Logger.Debug("Setting epochs to: " + Settings.EPOCHS);
+                    String epochsArg = args[i + 1];
+                    int epochsVal = Settings.EPOCHS;
+                    try {
+                        epochsVal = Integer.parseInt(epochsArg);
+                    } catch (Exception exc) {
+                        Logger.Throw("Incorrect epochs argument: " + epochsArg);
+                    }
+
+                    Logger.Debug("Epochs set to: " + Settings.EPOCHS);
                     break;
 
                 // Read the Population size
@@ -119,12 +141,18 @@ public class Program {
                     if (i + 1 >= args.length)
                         Logger.Throw("Incomplete arguments for population size");
 
-                    Settings.POPULATION_SIZE = Integer.parseInt(args[i + 1]);
+                    String popArg = args[i + 1];
+                    int popVal = Settings.POPULATION_SIZE;
+                    try {
+                        popVal = Integer.parseInt(popArg);
+                    } catch (Exception exc) {
+                        Logger.Throw("Incorrect population argument: " + popArg);
+                    }
 
                     if (Settings.POPULATION_SIZE < 1)
                         Logger.Throw("Cannot have population size less than 1");
 
-                    Logger.Debug("Setting population size to: " + Settings.POPULATION_SIZE);
+                    Logger.Info("Population size set to: " + Settings.POPULATION_SIZE);
                     break;
 
                 // Read map size
@@ -132,10 +160,17 @@ public class Program {
                     if (i + 1 >= args.length)
                         Logger.Throw("Incomplete arguments for map size");
 
-                    Settings.MAP_SIZE = Integer.parseInt(args[i + 1]);
+                    String mapArg = args[i + 1];
+                    int mapVal = Settings.MAP_SIZE;
+                    try {
+                        mapVal = Integer.parseInt(mapArg);
+                    } catch (Exception exc) {
+                        Logger.Throw("Incorrect map size argument: " + mapArg);
+                    }
+                    Settings.MAP_SIZE = mapVal;
 
-                    if (Settings.MAP_SIZE < 1)
-                        Logger.Throw("Cannot have map size less than 1");
+                    if (Settings.MAP_SIZE < 2)
+                        Logger.Throw("Cannot have map size less than 2");
 
                     Logger.Debug("Setting map size to: " + Settings.MAP_SIZE);
                     break;
@@ -170,7 +205,6 @@ public class Program {
                     int fullLength = Settings.NETWORK_STRUCTURE.length;
                     Settings.NETWORK_STRUCTURE[fullLength- 1] = Settings.NETWORK_OUTPUT_COUNT;
 
-                    Logger.Debug("Setting network structure to: " + Util.DisplayArray(Settings.NETWORK_STRUCTURE));
                     break;
                 
                 // Throw exception for unrecognized argument
@@ -193,6 +227,8 @@ public class Program {
         } catch (Exception exc) {
             Logger.Error("Exception during unit tests: " + exc.getMessage());
         }
+
+        RunGeneticAlgorithm();
     }
     
     /**
@@ -234,7 +270,7 @@ public class Program {
                 // Save the resulting network
                 _cachedNetwork = ((DigAgent)genAlg.getBestAgent()).getNetwork();
 
-                Logger.Gui("  Saving Network to file");
+                Logger.Gui("Saving Network to file");
 
                 // Write network to disk    
                 SaveNetwork();
@@ -269,6 +305,7 @@ public class Program {
     private static void RunLive() throws Exception {
         Logger.Gui("Running AI playthrough");
         try {
+
             IPerceptron network = getNetwork();
             IAgent agent = new DigAgent(network);
 
@@ -277,10 +314,10 @@ public class Program {
             while (!map.getIsComplete()) {
                 ((WorldState)map).Display();
                 IDeltaWorldState action = agent.GetAction(map);
-                Logger.Debug("Score: " + ((WorldState)map).getScore() + "    | Time: " + map.getTime());
+                Logger.Gui("Score: " + ((WorldState)map).getScore() + " | Time: " + map.getTime());
                 Logger.Debug("Action: " + Util.DisplayArray(action.getDeltaEncoding()));
                 map.ApplyDelta(action);
-                Thread.sleep(250);
+                Thread.sleep(Settings.FRAME_INTERVAL);
             }
             Logger.Gui("Game complete");
         } catch (Exception exc) {
@@ -299,13 +336,13 @@ public class Program {
         int defMapSq = Settings.DEFAULT_MAP_SIZE * Settings.DEFAULT_MAP_SIZE;
         switch (Settings.MAP_SIZE) {
             case (1) :
-                Logger.Throw("Not a very interesting setup");
-                break;
             case (2):
-                Settings.AGENT_FOV = Math.min(Settings.MAX_AGENT_FOV, Settings.MAP_SIZE);
+                Logger.Throw("Not a very interesting setup");
                 break;
             default:
                 Settings.AGENT_FOV = Math.min(Settings.MAX_AGENT_FOV, Settings.MAP_SIZE);
+
+                // Scale up the defaults 1x1
                 double ratio = mapSq/defMapSq;
                 Settings.ROCK_COUNT *= ratio;
                 Settings.DIRT_COUNT *= ratio;

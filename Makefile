@@ -1,13 +1,46 @@
 .DEFAULT_GOAL := generate
 
+# Source 
 SOURCE_DIR := src
+
+# Build
 BUILD_DIR := src/build
+
+# Classes
 CLASSES_OUTPUT := src/build/classes
+
+# Java
 JAVA_FILES := $(find . -name '*.java')
+
+# Network structure, will default to one 
+#  hidden layer with dimension 5
+#  This is the smallest network I've 
+#  had decent results with after training
+#  for an afternoon
 NET_STRUCT := 10:10
+
+# Mutation rate for genetic algorithm
+#  This represents the range allowed 
+#  for a random adjustment to a parameter
 MUT_RATE := .5
+
+# Size of the map
+#  Defaults to 3
 MAP_SIZE := 9
+
+# Population size
+POP_SIZE := 10
+
+# Epochs per loop
+#  A new set of training worlds
+#  are generated between loops
 EPs := 10
+
+# Logging level
+LOG_LEVEL := DEBUG
+
+# Command line arguments for the live run and training session program types
+CLI_ARGS := -l $(LOG_LEVEL) -rate $(MUT_RATE) -epochs $(EPs) -pop $(POP_SIZE) -m $(MAP_SIZE) -n $(NET_STRUCT)
 
 classpath:
 	@mkdir -p $(CLASSES_OUTPUT)
@@ -37,15 +70,15 @@ run: generate
 
 debug: generate
 	@clear
-	@java -jar DigDug.jar -UNITTEST -l DEBUG -rate 1.0 -M 10
+	@java -jar DigDug.jar -UNITTEST
 
 train: generate
 	@clear
-	@java -jar DigDug.jar -GENETICALG -l DEBUG -rate $(MUT_RATE) -EPOCHS $(EPs) -pop 25 -M $(MAP_SIZE) -N $(NET_STRUCT)
+	@java -jar DigDug.jar -GENETICALG $(CLI_ARGS)
 
 liverun: generate
 	@clear
-	@java -jar DigDug.jar -LIVERUN -l DEBUG -M $(MAP_SIZE) -N $(NET_STRUCT)
+	@java -jar DigDug.jar -LIVERUN $(CLI_ARGS)
 
 clean:
 	@echo "Cleaning up..."

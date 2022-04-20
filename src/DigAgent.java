@@ -62,8 +62,10 @@ public class DigAgent implements IAgent {
             // Our perceptron is the genetic object
             IGenetic pAsGen = (IGenetic)_perceptron;
 
-            // 
+            // Get the mutated copy of the perceptron
             IPerceptron newP = (IPerceptron)pAsGen.MutatedCopy(rate);
+
+            // Return a new agent with this perceptron
             return new DigAgent(newP);
         }
         //endregion
