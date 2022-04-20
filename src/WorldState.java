@@ -10,9 +10,7 @@ public class WorldState implements IWorldState {
     //endregion
 
     //region Gameboard
-    // TODO : Set up shooting mechanics
-    // TODO : Set up enemy AI
-    /** Members */
+    private String _message= "";
     private long _score = 0L;
     private boolean _isComplete = false;
     private int _x, _y;
@@ -23,6 +21,15 @@ public class WorldState implements IWorldState {
     /** Return the player's score */
     public long getScore() {
         return _score;
+    }
+
+    private void EndGame(String message) {
+        _message = message;
+        _isComplete = true;
+    }
+
+    public String getMessage() {
+        return _message;
     }
 
     /** Return the tile piece at a given coordinate */
@@ -378,7 +385,7 @@ public class WorldState implements IWorldState {
     private void CheckGameCompletion() throws Exception {
         // Check for over time limit
         if (_curTime > Settings.MAX_GAME_LENGTH) 
-            _isComplete = true;
+            EndGame("Time limit reached");
 
     }
 
@@ -399,7 +406,7 @@ public class WorldState implements IWorldState {
             // Player dies, remove him from board
             case ENEMY:
                 if (!isFiring) {
-                    _isComplete = true;
+                    EndGame("Player hit Enemy without firing at: " + Util.DisplayCoord(xPrime, yPrime));
                     _setAtCoord(player_X, player_Y, TileType.EMPTY);
                     player_X = -1;
                     player_Y = -1;
@@ -439,8 +446,8 @@ public class WorldState implements IWorldState {
 
         // Generate a random change
         //  in position
-        int dX = Uniform.RandInt(-1, 1);
-        int dY = Uniform.RandInt(-1, 1);
+        int dX = Util.RandInt(-1, 1);
+        int dY = Util.RandInt(-1, 1);
 
         // The new prime position
         int xPrime = x + dX;
@@ -457,12 +464,12 @@ public class WorldState implements IWorldState {
             case PLAYER:
                 _setAtCoord(xPrime,yPrime, TileType.ENEMY);
                 _setAtCoord(x, y, TileType.EMPTY);
-                _isComplete = true;
+                EndGame("Enemy attacked Player at: " + Util.DisplayCoord(xPrime, yPrime));
                 break;
         }
     }
 
-    private void MoveRock(int x, inty) throws Exception {
+    private void MoveRock(int x, int y) throws Exception {
 
         // The new prime position
         int xPrime = x;
@@ -479,7 +486,7 @@ public class WorldState implements IWorldState {
             case PLAYER:
                 _setAtCoord(xPrime,yPrime, TileType.ROCK);
                 _setAtCoord(x, y, TileType.EMPTY);
-                _isComplete = true;
+                EndGame("Rock fell on Player at: " + Util.DisplayCoord(xPrime, yPrime));
                 break;
         }
     }

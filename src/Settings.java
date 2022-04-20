@@ -3,15 +3,15 @@ public class Settings {
 
     //region DigDug inner game mechanics
     // Maximum allowed game length
-    public static long MAX_GAME_LENGTH = 1000L;
-    public static long FRAME_INTERVAL = 75; 
+    public static long MAX_GAME_LENGTH = 100L;
+    public static long FRAME_INTERVAL = 25; 
     public static int ENEMY_COUNT = 1;
     public static int COIN_COUNT = 1;
     public static int DIRT_COUNT = 5;
     public static int ROCK_COUNT = 1;
     public static int MAP_SIZE = 3;
-    public static int MAX_AGENT_FOV = 3;
-    public static int AGENT_FOV = 3;
+    public static int MAX_AGENT_FOV = 5;
+    public static int AGENT_FOV = 5;
 
     // Genetic Algorithm
     public static double MUTATION_RATE = .25;

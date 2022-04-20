@@ -79,4 +79,30 @@ public class Util {
         myWriter.write(content);
         myWriter.close();
     }
+
+    /**
+     * Loading/Saving networks
+     */
+    public static void SaveNetwork(IPerceptron network) throws Exception {
+        String fileName = "Net: " + DisplayArray(network.getStructure()) + ".txt";
+        WriteFile(fileName, ((IXmlSerializable)network).WriteXml());
+        Logger.Info("Network Saved");
+    }
+
+    /**
+     * Load the network that fits the current structure
+     */
+    public static IPerceptron LoadNetwork() throws Exception {
+        String fileName = "Net: " + DisplayArray(Settings.NETWORK_STRUCTURE) + ".txt";
+
+        try {
+            String fileContent = Util.ReadFile(fileName, StandardCharsets.UTF_8);
+
+            return new Perceptron(fileContent); 
+
+        } catch (Exception exc) {
+            Logger.Warn("Unable to load network: " + fileName);
+            return null;
+        }
+    }
 }

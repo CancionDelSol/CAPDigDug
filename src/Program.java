@@ -152,7 +152,7 @@ public class Program {
                     }
 
                     Settings.POPULATION_SIZE = popVal;
-                    
+
                     if (Settings.POPULATION_SIZE < 1)
                         Logger.Throw("Cannot have population size less than 1");
 
@@ -277,7 +277,7 @@ public class Program {
                 Logger.Gui("Saving Network to file");
 
                 // Write network to disk    
-                SaveNetwork();
+                Util.SaveNetwork(_cachedNetwork);
 
             } while(res > Settings.PERFORMANCE_THRESHOLD);
             
@@ -323,7 +323,8 @@ public class Program {
                 map.ApplyDelta(action);
                 Thread.sleep(Settings.FRAME_INTERVAL);
             }
-            Logger.Gui("Game complete");
+            Logger.Gui("Game complete: " + ((WorldState)map).getMessage());
+            ((WorldState)map).Display();
         } catch (Exception exc) {
             Logger.Throw("Exception during AI runthrough: " + exc.getMessage());
         }
@@ -372,25 +373,14 @@ public class Program {
      * Load the network from disk
      */
     private static void LoadCachedNetwork() throws Exception {
-        String fileContent = Util.ReadFile(Settings.NETWORK_FILE_NAME, StandardCharsets.UTF_8);
+        _cachedNetwork = Util.LoadNetwork();
 
-        _cachedNetwork = new Perceptron(fileContent); 
-
-        // Incompatible network, just make a new one
-        if (_cachedNetwork.getStructure()[0] != Settings.NETWORK_INPUT_COUNT) {
-            Logger.Warn("Incompatible network loaded, creating new one");
+        if (_cachedNetwork == null) {
             _cachedNetwork = new Perceptron(Settings.NETWORK_STRUCTURE);
-            return;
+            Logger.Info("Random network generated");
         }
-        Logger.Info("Network loaded: " + Util.DisplayArray(_cachedNetwork.getStructure()));
-    }
-
-    /**
-     * Save the cached network to disk as xml
-     */
-    private static void SaveNetwork() throws Exception {
-        Util.WriteFile(Settings.NETWORK_FILE_NAME, ((IXmlSerializable)getNetwork()).WriteXml());
-        Logger.Info("Network Saved");
+        else
+            Logger.Info("Network loaded: " + Util.DisplayArray(_cachedNetwork.getStructure()));
     }
     
     /**
@@ -404,7 +394,7 @@ public class Program {
             try {
                 LoadCachedNetwork();
             } catch (Exception exc) {
-                Logger.Warn(" No network to load");
+                Logger.Warn(" No network to load: " + exc.getMessage());
                 _cachedNetwork = new Perceptron(Settings.NETWORK_STRUCTURE);
             }
         }

@@ -26,7 +26,7 @@ MUT_RATE := .5
 
 # Size of the map
 #  Defaults to 3
-MAP_SIZE := 9
+MAP_SIZE := 18
 
 # Population size
 POP_SIZE := 10
