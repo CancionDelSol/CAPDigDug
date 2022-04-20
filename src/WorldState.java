@@ -177,9 +177,21 @@ public class WorldState implements IWorldState {
         
         MovePlayer(dX, dY, networkOutput[4] > threshold);
 
-        // Check for player contact
-
         // TODO : Enemy Movement
+        for (int x = 0; x < Settings.MAP_SIZE; x++) {
+            for (int y = 0; y < Settings.MAP_SIZE; y++) {
+                TileType curType = GetTileType(x, y);
+
+                switch (curType) {
+                    case ENEMY:
+                        MoveEnemy(x, y);
+                        break;
+                    case ROCK:
+                        MoveRock(x, y);
+                        break;
+                }
+            }
+        }
 
         // TODO : ROCKS FALL
         
@@ -259,6 +271,10 @@ public class WorldState implements IWorldState {
         return rVal;
     };
 
+    /**
+     * Get the dig agent error
+     * @return Dig agent error
+     */
     private double GetDigAgentError() {
         // Return the current error the ratio
         //  of the current score over the 
@@ -388,18 +404,82 @@ public class WorldState implements IWorldState {
                     player_X = -1;
                     player_Y = -1;
                     break;
+                } else {
+                    _score += atNewSpot.getPointTotal();
+                    _setAtCoord(xPrime, yPrime, TileType.PLAYER);
+                    _setAtCoord(player_X, player_Y, TileType.EMPTY);
+                    player_X = xPrime;
+                    player_Y = yPrime;
+                    break;
                 }
             case COIN:
             case DIRT:
-                _score += atNewSpot.getPointTotal();
+                if (!isFiring)
+                    _score += atNewSpot.getPointTotal();
             case EMPTY:
-                _setAtCoord(xPrime, yPrime, TileType.PLAYER);
-                _setAtCoord(player_X, player_Y, TileType.EMPTY);
-                player_X = xPrime;
-                player_Y = yPrime;
-                break;
+                if (!isFiring) {
+                    _setAtCoord(xPrime, yPrime, TileType.PLAYER);
+                    _setAtCoord(player_X, player_Y, TileType.EMPTY);
+                    player_X = xPrime;
+                    player_Y = yPrime;
+                    break;
+                }
+                
 
             default:
+                break;
+        }
+    }
+
+    /**
+     * Move an enemy into a random spot
+     *  Will not move if not empty or player
+     */
+    private void MoveEnemy(int x, int y) throws Exception {
+
+        // Generate a random change
+        //  in position
+        int dX = Uniform.RandInt(-1, 1);
+        int dY = Uniform.RandInt(-1, 1);
+
+        // The new prime position
+        int xPrime = x + dX;
+        int yPrime = y + dY;
+
+        // Get what is in that position already
+        TileType atNewPos = GetTileType(xPrime, yPrime);
+
+        switch (atNewPos) {
+            case EMPTY:
+                _setAtCoord(xPrime, yPrime, TileType.ENEMY);
+                _setAtCoord(x, y, TileType.EMPTY);
+                break;
+            case PLAYER:
+                _setAtCoord(xPrime,yPrime, TileType.ENEMY);
+                _setAtCoord(x, y, TileType.EMPTY);
+                _isComplete = true;
+                break;
+        }
+    }
+
+    private void MoveRock(int x, inty) throws Exception {
+
+        // The new prime position
+        int xPrime = x;
+        int yPrime = y + 1;
+
+        // Get what is in that position already
+        TileType atNewPos = GetTileType(xPrime, yPrime);
+
+        switch (atNewPos) {
+            case EMPTY:
+                _setAtCoord(xPrime, yPrime, TileType.ROCK);
+                _setAtCoord(x, y, TileType.EMPTY);
+                break;
+            case PLAYER:
+                _setAtCoord(xPrime,yPrime, TileType.ROCK);
+                _setAtCoord(x, y, TileType.EMPTY);
+                _isComplete = true;
                 break;
         }
     }
