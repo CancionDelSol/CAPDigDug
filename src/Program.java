@@ -17,7 +17,9 @@ public class Program {
         PLAYER    // Allow the user to freeplay the game
     }
     //endregion
-
+    /**
+     * 
+     */
     public static void main(String[] args) {
         Logger.Gui("Start Up");
 
@@ -275,7 +277,7 @@ public class Program {
             while (!map.getIsComplete()) {
                 ((WorldState)map).Display();
                 IDeltaWorldState action = agent.GetAction(map);
-                Logger.Debug("Score: " + ((WorldState)map).getScore());
+                Logger.Debug("Score: " + ((WorldState)map).getScore() + "    | Time: " + map.getTime());
                 Logger.Debug("Action: " + Util.DisplayArray(action.getDeltaEncoding()));
                 map.ApplyDelta(action);
                 Thread.sleep(250);
