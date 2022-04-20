@@ -126,6 +126,7 @@ public class Program {
                         Logger.Throw("Incomplete arguments for epochs");
 
                     String epochsArg = args[i + 1];
+                    Logger.Debug("Epochs arg: " + epochsArg);
                     int epochsVal = Settings.EPOCHS;
                     try {
                         epochsVal = Integer.parseInt(epochsArg);
@@ -133,7 +134,8 @@ public class Program {
                         Logger.Throw("Incorrect epochs argument: " + epochsArg);
                     }
 
-                    Logger.Debug("Epochs set to: " + Settings.EPOCHS);
+                    Settings.EPOCHS = epochsVal;
+                    Logger.Info("Epochs set to: " + Settings.EPOCHS);
                     break;
 
                 // Read the Population size
@@ -149,6 +151,8 @@ public class Program {
                         Logger.Throw("Incorrect population argument: " + popArg);
                     }
 
+                    Settings.POPULATION_SIZE = popVal;
+                    
                     if (Settings.POPULATION_SIZE < 1)
                         Logger.Throw("Cannot have population size less than 1");
 
@@ -358,7 +362,7 @@ public class Program {
         int fovInputs = (TileType.values().length - 1) * Settings.AGENT_FOV * Settings.AGENT_FOV;
         Settings.NETWORK_INPUT_COUNT = fovInputs + 4;
         Settings.NETWORK_STRUCTURE[0] = Settings.NETWORK_INPUT_COUNT;
-        Logger.Debug("Network structure changed to : " + Util.DisplayArray(Settings.NETWORK_STRUCTURE));
+        Logger.Debug("Network structure set to : " + Util.DisplayArray(Settings.NETWORK_STRUCTURE));
 
     }
     //endregion

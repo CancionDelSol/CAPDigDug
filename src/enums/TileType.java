@@ -14,7 +14,7 @@ public enum TileType {
         _disp = disp;
     }
 
-    public int getpointTotal() {
+    public int getPointTotal() {
         return _ptTotal;
     }
 

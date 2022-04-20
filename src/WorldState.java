@@ -85,9 +85,19 @@ public class WorldState implements IWorldState {
     //endregion
 
     //region IWorldState
+    /**
+     * Length property
+     * @return The encoded state length
+     */
     public int getLength() throws Exception {
         return getEncoding().length;
     }
+
+    /**
+     * Encoding property
+     * @return The encoding (i.e input
+     *          array for the network)
+     */
     public double[] getEncoding() throws Exception {
         if (getIsComplete())
             Logger.Throw("Attempt to get encoding for completed game");
@@ -97,17 +107,30 @@ public class WorldState implements IWorldState {
 
         return Arrays.copyOf(_encodedState, _encodedState.length);
     }
+
+    /**
+     * Time property
+     * @return Current world state time
+     */
     public long getTime() throws Exception {
         return _curTime;
     }
+
+    /**
+     * IsComplete property
+     * @return True if world is complete
+     */
     public boolean getIsComplete() throws Exception {
         CheckGameCompletion();
 
         return _isComplete;
     }
 
-    /** Apply a delta to this world state
-         using the neural network outputs */
+    /** 
+     * Apply a delta to this world state
+     *  using the neural network outputs
+     * @param dState The delta to apply
+     */
     public void ApplyDelta(IDeltaWorldState dState) throws Exception {
         _encodedState = null;
 
@@ -161,6 +184,11 @@ public class WorldState implements IWorldState {
         // TODO : ROCKS FALL
         
     }
+
+    /**
+     * Return a clone of this state
+     * @return A copy of this instance
+     */
     public IWorldState clone() {
         try {
             return new WorldState(this);
@@ -172,7 +200,9 @@ public class WorldState implements IWorldState {
     //endregion
 
     //region Object
-    /** Print grid to screen */
+    /**
+     * Print grid to screen
+     */
     public void Display() {
         String colSep = "| ";
 
@@ -192,6 +222,9 @@ public class WorldState implements IWorldState {
         Logger.Gui(getRowSep() + "\n");
     }
 
+    /**
+     * The row seperator
+     */
     private String _rowSep;
     private String getRowSep() {
         if (_rowSep == null) {
@@ -209,13 +242,16 @@ public class WorldState implements IWorldState {
     //endregion
 
     //region IErrorFunction
+    /**
+     * The lamda for agent error evaluation
+     */
     public static GenAlg.IErrorFunction digDugEvaluation = (worldState) -> { 
         double rVal = 0.0;
         try {
             if (!(worldState instanceof WorldState))
                 Logger.Throw("Incorrect worldState object type");
 
-            return ((WorldState)worldState).GetDigAgentScore();
+            return ((WorldState)worldState).GetDigAgentError();
 
         } catch (Exception exc) {
             Logger.Error("Exception in error function: " + exc.getMessage());
@@ -223,19 +259,26 @@ public class WorldState implements IWorldState {
         return rVal;
     };
 
-    private double GetDigAgentScore() {
-        // Return the current score as a fraction of the total
-        //  possible score
-        double totalPossibleScore = 1.0; // To prevent divide by zero
+    private double GetDigAgentError() {
+        // Return the current error the ratio
+        //  of the current score over the 
+        //  total possible score
+        //  Start at one to prevent divide by zero
+        double totalPossibleScore = 1.0;
 
+        // The total possile score
+        //  includes the current score
         totalPossibleScore += _score;
 
+        // Loop through all tiles and
+        //  add it's value to the total
+        //  possible score
         for (int i = 0; i < _tiles.length; i++) {
             TileType tile = _tiles[i];
             if (tile == TileType.EMPTY)
                 continue;
 
-            totalPossibleScore += tile.getpointTotal();
+            totalPossibleScore += tile.getPointTotal();
         }
         return (totalPossibleScore - _score)/totalPossibleScore;
     }
@@ -348,7 +391,7 @@ public class WorldState implements IWorldState {
                 }
             case COIN:
             case DIRT:
-                _score += atNewSpot.getpointTotal();
+                _score += atNewSpot.getPointTotal();
             case EMPTY:
                 _setAtCoord(xPrime, yPrime, TileType.PLAYER);
                 _setAtCoord(player_X, player_Y, TileType.EMPTY);

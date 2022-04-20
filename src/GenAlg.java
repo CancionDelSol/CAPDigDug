@@ -54,6 +54,10 @@ public class GenAlg {
         return Execute(epochs, Values.Epsilon, inputs);
     }
 
+    /**
+     * Excecute the genetic algorithm for given 
+     *  count or until the threshold is met
+     */
     public double Execute(int epochs, double threshold, List<IWorldState> inputs) throws Exception {
         // Check for bad state
         ValidateSetup();
@@ -64,7 +68,7 @@ public class GenAlg {
         // Iterate over epochs
         int curEpoch = 0;
         do {
-            // Run each genetic (network) for each world state
+            // Run each agent for each world state
             //  and take the average performance
             IAgent replacement = _source;
 
@@ -75,22 +79,36 @@ public class GenAlg {
             IAgent newMember = _source;
             for (int curGeneticIndex = 0; curGeneticIndex < _popSize; curGeneticIndex++) {
                 
-                // Track the average performance
+                // Average performance
                 double avgPerformance = 0.0;
                 for (IWorldState initialState : inputs) {
+
+                    // Get a copy of the initial state
                     IWorldState copy = (IWorldState)initialState.clone();
 
                     do {
+
+                        // Get the agent's action delta
                         IDeltaWorldState delta = newMember.GetAction(copy);
+
+                        // Apply the delta to the agent's world
                         copy.ApplyDelta(delta);
+
+
                     } while (!copy.getIsComplete());
 
+                    // Get the agent's error
                     double curError = _errorFunction.GetError(copy);
+
+                    // Increment the average performance
                     avgPerformance += curError;
                 }
 
+                // Final division by total inputs
                 avgPerformance = avgPerformance/(double)inputs.size();
 
+                // If this is the best performer
+                //  set as the replacement
                 if (avgPerformance < bestError) {
                     bestError = avgPerformance;
                     replacement = newMember;
@@ -99,8 +117,12 @@ public class GenAlg {
                 // Create new member
                 newMember = (IAgent)_source.MutatedCopy(_mutationRate);
             }
+
+            // Save the new source
             _source = replacement;
 
+            // Print some info every 1/10th of
+            //  the total epochs for this session
             if (curEpoch%(epochs/10) == 0)
                 Logger.Info(" Epoch: " + curEpoch + " | Best Error: " + bestError);
 

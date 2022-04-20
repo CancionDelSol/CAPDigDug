@@ -40,7 +40,7 @@ EPs := 10
 LOG_LEVEL := DEBUG
 
 # Command line arguments for the live run and training session program types
-CLI_ARGS := -l $(LOG_LEVEL) -rate $(MUT_RATE) -epochs $(EPs) -pop $(POP_SIZE) -m $(MAP_SIZE) -n $(NET_STRUCT)
+CLI_ARGS := -l $(LOG_LEVEL) -rate $(MUT_RATE) -e $(EPs) -pop $(POP_SIZE) -m $(MAP_SIZE) -n $(NET_STRUCT)
 
 classpath:
 	@mkdir -p $(CLASSES_OUTPUT)
