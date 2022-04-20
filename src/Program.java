@@ -49,7 +49,9 @@ public class Program {
         }
     }
     
-    /** Prcesses the command line arguments */
+    /** 
+     * Processes the command line arguments
+     */
     private static void ProcessCLArgs(String[] args) throws Exception {
 
         for (int i = 0; i < args.length; i++) {
@@ -179,6 +181,9 @@ public class Program {
     }
 
     //region Private
+    /**
+     * Run the unit tests
+     */
     private static void RunUnitTests() throws Exception {
         Logger.Gui("Running Unit tests");
         try {
@@ -188,6 +193,9 @@ public class Program {
         }
     }
     
+    /**
+     * Run the genetic algorithm
+     */
     private static void RunGeneticAlgorithm() throws Exception {
         Logger.Gui("Running Genetic Algorithm");
         try {
@@ -240,6 +248,10 @@ public class Program {
         }
     }
 
+    /**
+     * Run a player session for the user
+     * TODO
+     */
     private static void RunPlayerSession() throws Exception {
         Logger.Gui("Running Player Session");
         try {
@@ -249,6 +261,9 @@ public class Program {
         }
     }
 
+    /**
+     * Replay the cached network in a random world
+     */
     private static void RunLive() throws Exception {
         Logger.Gui("Running AI playthrough");
         try {
@@ -310,6 +325,9 @@ public class Program {
     //endregion
 
     //region Load/Save
+    /**
+     * Load the network from disk
+     */
     private static void LoadCachedNetwork() throws Exception {
         String fileContent = Util.ReadFile(Settings.NETWORK_FILE_NAME, StandardCharsets.UTF_8);
 
@@ -324,11 +342,20 @@ public class Program {
         Logger.Info("Network loaded: " + Util.DisplayArray(_cachedNetwork.getStructure()));
     }
 
+    /**
+     * Save the cached network to disk as xml
+     */
     private static void SaveNetwork() throws Exception {
         Util.WriteFile(Settings.NETWORK_FILE_NAME, ((IXmlSerializable)getNetwork()).WriteXml());
         Logger.Info("Network Saved");
     }
     
+    /**
+     * Network property
+     * @return the cached IPerceptron. This will be
+     *         loaded from disk. Upon failure to load,
+     *         a random network will be created and cached
+     */
     private static IPerceptron getNetwork() throws Exception {
         if (_cachedNetwork == null) {
             try {

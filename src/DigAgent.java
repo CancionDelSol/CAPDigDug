@@ -4,25 +4,34 @@ public class DigAgent implements IAgent {
         //endregion
 
         //region Constructor
-        /** Create an initial, random agent */
+        /** 
+         * Create an initial, random agent
+         * @param structure Structure of underlying
+         *                  perceptron
+         */
         public DigAgent(int[] structure) throws Exception {
             _perceptron = new Perceptron(structure);
         }
 
-        /** Create a dig agent with a specified perceptron. 
-            Will retain reference to the perceptron*/
+        /** 
+         * Create a dig agent with a specified perceptron.
+         */
         public DigAgent(IPerceptron perceptron) throws Exception {
             _perceptron = perceptron;
         }
 
-        /** Create a copy of an initializer perceptron */
+        /**
+         * Copy constructor
+         */
         public DigAgent(DigAgent initializer) throws Exception {
             _perceptron = new Perceptron(initializer._perceptron);
         }
         //endregion
 
         //region IAgent
-        /** Return this agents action for a given world state */
+        /** 
+         * Return this agents action for a given world state 
+         */
         public IDeltaWorldState GetAction(IWorldState currentState) throws Exception {
             double[] encoding = currentState.getEncoding();
 
@@ -30,22 +39,34 @@ public class DigAgent implements IAgent {
 
             return new DeltaWorldState(networkOutput);
         }
+
+        /**
+         * Network property
+         * @return the IPerceptron for this agent
+         */
+        IPerceptron getNetwork() { return _perceptron; }
         //endregion
 
         //region IGenetic
-        /** Create a perfect copy of this agent */
+        /** 
+         * Create a perfect copy of this agent 
+         */
         public IGenetic PerfectCopy() throws Exception {
             return new DigAgent(this);
         }
 
-        /** Create a mutated copy of this agent */
+        /**
+         * Create a mutated copy of this agent 
+         */
         public IGenetic MutatedCopy(double rate) throws Exception {
+            // Our perceptron is the genetic object
             IGenetic pAsGen = (IGenetic)_perceptron;
+
+            // 
             IPerceptron newP = (IPerceptron)pAsGen.MutatedCopy(rate);
             return new DigAgent(newP);
         }
         //endregion
 
-        //region Locals
-        IPerceptron getNetwork() { return _perceptron; }
+        
 }

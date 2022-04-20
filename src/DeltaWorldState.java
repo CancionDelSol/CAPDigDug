@@ -6,24 +6,37 @@ public class DeltaWorldState implements IDeltaWorldState{
     //endregion
 
     //region Constructor
-    /** Create a delta world state with defined deltas */
+    /**
+      * Create a delta world 
+      *  state with given deltas
+      * @param deltas Deltas
+      */
     public DeltaWorldState(double[] deltas) {
         _deltas = Arrays.copyOf(deltas, deltas.length);
     }
     //endregion
 
     //region IDeltaWorldState
-    /** Get length of values array */
+    /**
+      * Get length of values array
+      */
     public int getLength() {
         return _deltas.length;
     }
 
+    /**
+     * DeltaEncoding property
+     */
     public double[] getDeltaEncoding() {
         return Arrays.copyOf(_deltas, _deltas.length);
     }
     //endregion
 
     //region Object
+    /**
+     * Compare this instance with another 
+     *  object 
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null)
