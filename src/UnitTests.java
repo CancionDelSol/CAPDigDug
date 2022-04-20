@@ -1,16 +1,18 @@
 import interfaces.*;
 import java.util.*;
+import java.nio.charset.*;
 
 public class UnitTests {
     //region Run all
     public static void RunAll() throws Exception{
-        // MatrixMultiplicationTestOne();
-        // MatrixMultiplicationTestTwo();
-        // MatrixAdditionSubtractionTest();
-        // PerceptronXmlSerializationTest();
-        // PerceptronGeneticTest();
-        // PerceptronViabilityTest();
+        MatrixMultiplicationTestOne();
+        MatrixMultiplicationTestTwo();
+        MatrixAdditionSubtractionTest();
+        PerceptronXmlSerializationTest();
+        PerceptronGeneticTest();
+        PerceptronViabilityTest();
         WorldStateTest();
+        PerceptronSaveLoadTest();
     }
     //endregion
 
@@ -335,6 +337,44 @@ public class UnitTests {
         }
         return rVal;
     };
+    //endregion
+
+    //region Perceptron
+    private static void PerceptronSaveLoadTest() throws Exception {
+        String testName = "PerceptronSaveLoadTest";
+        int testInputCount = Util.RandInt(5, 1000);
+
+        int[] testStruct = new int[] { testInputCount, Util.RandInt(5, 1000), Util.RandInt(5, 1000) };
+
+        double[] testInputs = new double[testInputCount];
+        for (int i = 0; i < testInputCount; i++) {
+            testInputs[i] = Util.Uniform(0.0, 1.0);
+        }
+
+        IPerceptron origPerc = new Perceptron(testStruct);
+
+        double[] origOutput = origPerc.FeedForward(testInputs);
+
+        Util.WriteFile("UNITTESTNETWORK.txt", ((IXmlSerializable)origPerc).WriteXml());
+
+        String fileContent = Util.ReadFile("UNITTESTNETWORK.txt", StandardCharsets.UTF_8);
+
+        IPerceptron loadedPerc = new Perceptron(fileContent);
+
+        double[] newOutput = loadedPerc.FeedForward(testInputs);
+
+        if (newOutput.length != origOutput.length) {
+            LogResult(testName, false, " orig length: " + origOutput.length + " new length: " + newOutput.length);
+        }
+
+        for (int i = 0; i < newOutput.length; i++) {
+            if (origOutput[i] != newOutput[i]) {
+                LogResult(testName, false, " orig: " + origOutput[i] + " new: " + newOutput[i]);
+            }
+        }
+
+        LogResult(testName, true, "");
+    }
     //endregion
 
     //region WorldState

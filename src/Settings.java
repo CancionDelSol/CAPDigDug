@@ -2,7 +2,7 @@
 public class Settings {
 
     // DigDug inner game mechanics
-    public static long MAX_GAME_LENGTH = 25L;
+    public static long MAX_GAME_LENGTH = 1000L;
     public static int ENEMY_COUNT = 1;
     public static int COIN_COUNT = 1;
     public static int DIRT_COUNT = 5;
@@ -14,9 +14,9 @@ public class Settings {
     // Genetic Algorithm
     public static double MUTATION_RATE = .25;
     public static int POPULATION_SIZE = 100;
-    public static int EPOCHS = 1000;
+    public static int EPOCHS = 100;
     public static int SET_SIZE = 25;
-    public static double PERFORMANCE_THRESHOLD = Values.Epsilon;
+    public static double PERFORMANCE_THRESHOLD = .15;
 
     // Perceptron setup
     public static String NETWORK_FILE_NAME = "Network.txt";

@@ -1,7 +1,7 @@
 public enum TileType {
-    DIRT(10, "#"),
+    DIRT(250, "#"),
     PLAYER(0, "^"),
-    ENEMY(100, "&"),
+    ENEMY(4000, "&"),
     COIN(1000, "*"),
     ROCK(0, "@"),
     EMPTY(0, " "),

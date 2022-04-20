@@ -152,7 +152,7 @@ public class WorldState implements IWorldState {
             }
         }
         
-        MovePlayer(dX, dY);
+        MovePlayer(dX, dY, networkOutput[4] > threshold);
 
         // Check for player contact
 
@@ -266,7 +266,11 @@ public class WorldState implements IWorldState {
             }
         }
         int curIndex = inArray * perTile;
-        _encodedState[curIndex] = Math.sin(_curTime * Values.PI/4.0);
+        _encodedState[curIndex] = Math.sin(_curTime * Values.PI/16.0);
+        _encodedState[curIndex + 1] = Math.sin(_curTime * Values.PI/8.0);
+        _encodedState[curIndex + 2] = Math.sin(_curTime * Values.PI/4.0);
+        _encodedState[curIndex + 3] = Math.sin(_curTime * Values.PI/2.0);
+
     }
 
     /** Randomize the game board */
@@ -319,7 +323,7 @@ public class WorldState implements IWorldState {
 
     }
 
-    private void MovePlayer(int x, int y) throws Exception {
+    private void MovePlayer(int x, int y, boolean isFiring) throws Exception {
         int xPrime = player_X + x;
         int yPrime = player_Y + y;
 
@@ -335,13 +339,13 @@ public class WorldState implements IWorldState {
         switch (atNewSpot) {
             // Player dies, remove him from board
             case ENEMY:
-                _isComplete = true;
-                _setAtCoord(player_X, player_Y, TileType.EMPTY);
-                player_X = -1;
-                player_Y = -1;
-                
-                break;
-
+                if (!isFiring) {
+                    _isComplete = true;
+                    _setAtCoord(player_X, player_Y, TileType.EMPTY);
+                    player_X = -1;
+                    player_Y = -1;
+                    break;
+                }
             case COIN:
             case DIRT:
                 _score += atNewSpot.getpointTotal();

@@ -4,9 +4,10 @@ SOURCE_DIR := src
 BUILD_DIR := src/build
 CLASSES_OUTPUT := src/build/classes
 JAVA_FILES := $(find . -name '*.java')
-NET_STRUCT := 75:50:25
-MUT_RATE := 1.0
+NET_STRUCT := 10:10
+MUT_RATE := .5
 MAP_SIZE := 9
+EPs := 10
 
 classpath:
 	@mkdir -p $(CLASSES_OUTPUT)
@@ -40,7 +41,7 @@ debug: generate
 
 train: generate
 	@clear
-	@java -jar DigDug.jar -GENETICALG -l DEBUG -rate $(MUT_RATE) -EPOCHS 1000 -pop 5 -M $(MAP_SIZE) -N $(NET_STRUCT)
+	@java -jar DigDug.jar -GENETICALG -l DEBUG -rate $(MUT_RATE) -EPOCHS $(EPs) -pop 25 -M $(MAP_SIZE) -N $(NET_STRUCT)
 
 liverun: generate
 	@clear

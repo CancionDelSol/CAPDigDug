@@ -82,7 +82,6 @@ public class GenAlg {
 
                     do {
                         IDeltaWorldState delta = newMember.GetAction(copy);
-
                         copy.ApplyDelta(delta);
                     } while (!copy.getIsComplete());
 
@@ -102,7 +101,7 @@ public class GenAlg {
             }
             _source = replacement;
 
-            if (curEpoch%(Settings.EPOCHS/100) == 0)
+            if (curEpoch%(epochs/10) == 0)
                 Logger.Verbose("Epoch: " + curEpoch + " | Best Error: " + bestError);
 
         } while (bestError > threshold && curEpoch++ < epochs);

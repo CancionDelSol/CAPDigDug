@@ -196,7 +196,7 @@ public class Program {
 
             // Split all epochs into 10 groups
             double res = Values.VeryLarge;
-            for (int i = 0; i < Settings.EPOCHS/10; i++) {
+            do {
                 testSet.clear();
 
                 // Setup new world states for training
@@ -219,7 +219,7 @@ public class Program {
                                         WorldState.digDugEvaluation);
 
                 // Execute Genetic algorithm
-                res = genAlg.Execute(Settings.EPOCHS/10, testSet);
+                res = genAlg.Execute(Settings.EPOCHS, testSet);
 
                 // Save the resulting network
                 _cachedNetwork = ((DigAgent)genAlg.getBestAgent()).getNetwork();
@@ -229,7 +229,7 @@ public class Program {
                 // Write network to disk    
                 SaveNetwork();
 
-            }
+            } while(res > Settings.PERFORMANCE_THRESHOLD);
             
             Logger.Gui(" Algorithm finished with final agent performance error: " + res);
 
@@ -263,7 +263,7 @@ public class Program {
                 Logger.Debug("Score: " + ((WorldState)map).getScore());
                 Logger.Debug("Action: " + Util.DisplayArray(action.getDeltaEncoding()));
                 map.ApplyDelta(action);
-                Thread.sleep(1000);
+                Thread.sleep(250);
             }
             Logger.Gui("Game complete");
         } catch (Exception exc) {
@@ -289,9 +289,9 @@ public class Program {
                 break;
             default:
                 Settings.AGENT_FOV = Math.min(Settings.MAX_AGENT_FOV, Settings.MAP_SIZE);
-                int ratio = mapSq/defMapSq; Logger.Debug("Ratio: " + ratio);
+                double ratio = mapSq/defMapSq;
                 Settings.ROCK_COUNT *= ratio;
-                Settings.DIRT_COUNT *= ratio; Logger.Debug("Dirt count: " + Settings.DIRT_COUNT);
+                Settings.DIRT_COUNT *= ratio;
                 Settings.COIN_COUNT *= ratio;
                 Settings.ENEMY_COUNT *= ratio;
                 break;
@@ -301,9 +301,8 @@ public class Program {
         //  This is equal to the number of possible tiles
         //   minus the void tiles which do not trigger
         //   neuron activity.
-        Logger.Debug("Agent FOV: " + Settings.AGENT_FOV);
         int fovInputs = (TileType.values().length - 1) * Settings.AGENT_FOV * Settings.AGENT_FOV;
-        Settings.NETWORK_INPUT_COUNT = fovInputs + 1;
+        Settings.NETWORK_INPUT_COUNT = fovInputs + 4;
         Settings.NETWORK_STRUCTURE[0] = Settings.NETWORK_INPUT_COUNT;
         Logger.Debug("Network structure changed to : " + Util.DisplayArray(Settings.NETWORK_STRUCTURE));
 
@@ -322,7 +321,7 @@ public class Program {
             _cachedNetwork = new Perceptron(Settings.NETWORK_STRUCTURE);
             return;
         }
-        Logger.Debug("Network loaded: " + Util.DisplayArray(_cachedNetwork.getStructure()));
+        Logger.Info("Network loaded: " + Util.DisplayArray(_cachedNetwork.getStructure()));
     }
 
     private static void SaveNetwork() throws Exception {
