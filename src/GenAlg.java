@@ -1,10 +1,10 @@
-/** @file GenAlg.java
- *  @brief Runs genetic Algorithm
- *          using an IGenetic and
- *          world states
+/**
+ * 
+ * @author Roger Johnson
  *
- *  @author Roger Johnson
- *  @bug No known bugs.
+ * @date 4/24/2016
+ *
+ * @info Course COP4601
  */
 
 

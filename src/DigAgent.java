@@ -1,3 +1,12 @@
+/**
+ * 
+ * @author Roger Johnson
+ *
+ * @date 4/24/2016
+ *
+ * @info Course COP4601
+ */
+ 
 public class DigAgent implements IAgent {
     //region Members
         IPerceptron _perceptron;

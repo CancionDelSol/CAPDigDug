@@ -1,3 +1,12 @@
+/**
+ * 
+ * @author Roger Johnson
+ *
+ * @date 4/24/2016
+ *
+ * @info Course COP4601
+ */
+ 
 import java.text.*;
 import java.lang.*;
 import java.util.*;

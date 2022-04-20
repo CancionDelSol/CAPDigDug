@@ -24,3 +24,5 @@ hs_err_pid*
 src/myManifest
 Network.txt
 UNITTESTNETWORK.txt
+Net:*.txt
+.gitignore

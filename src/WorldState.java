@@ -1,3 +1,13 @@
+/**
+ * 
+ * @author Roger Johnson
+ *
+ * @date 4/24/2016
+ *
+ * @info Course COP4601
+ */
+
+
 import java.util.*;
 
 public class WorldState implements IWorldState {
@@ -17,6 +27,7 @@ public class WorldState implements IWorldState {
     private int player_X, player_Y;
     private TileType[] _tiles;
     private List<TileType> _destroyed = new ArrayList<>();
+    private int[] _hasMoved;
 
     /** Return the player's score */
     public long getScore() {
@@ -167,16 +178,16 @@ public class WorldState implements IWorldState {
 
         if (highestVal > threshold) {
             switch(highestIndex) {
-                case 0:
+                case 0: // Move left
                     dX = -1;
                     break;
-                case 1:
+                case 1: // Move up
                     dY = -1;
                     break;
-                case 2:
+                case 2: // Move right
                     dX = 1;
                     break;
-                case 3:
+                case 3: // Move down
                     dY = 1;
                     break;
             }
@@ -184,7 +195,10 @@ public class WorldState implements IWorldState {
         
         MovePlayer(dX, dY, networkOutput[4] > threshold);
 
-        // TODO : Enemy Movement
+        // Keep track of what has already been moved
+        _hasMoved = new int[_tiles.length];
+
+        // Move enemies and rocks
         for (int x = 0; x < Settings.MAP_SIZE; x++) {
             for (int y = 0; y < Settings.MAP_SIZE; y++) {
                 TileType curType = GetTileType(x, y);
@@ -199,9 +213,6 @@ public class WorldState implements IWorldState {
                 }
             }
         }
-
-        // TODO : ROCKS FALL
-        
     }
 
     /**
@@ -393,7 +404,6 @@ public class WorldState implements IWorldState {
         int xPrime = player_X + x;
         int yPrime = player_Y + y;
 
-
         if (xPrime < 0 || xPrime >= Settings.MAP_SIZE)
             xPrime = player_X;
         
@@ -402,40 +412,50 @@ public class WorldState implements IWorldState {
 
         TileType atNewSpot = _getAtCoord(xPrime, yPrime);
 
-        switch (atNewSpot) {
-            // Player dies, remove him from board
-            case ENEMY:
-                if (!isFiring) {
+        if (isFiring) {
+            switch(atNewSpot) {
+                case ENEMY:
+                    _score += atNewSpot.getPointTotal();
+                    _setAtCoord(xPrime, yPrime, TileType.PLAYER);
+                    _setAtCoord(player_X, player_Y, TileType.EMPTY);
+                    player_X = xPrime;
+                    player_Y = yPrime;
+                    break;
+                case COIN:
+                case DIRT:
+                case EMPTY:
+                    _setAtCoord(xPrime, yPrime, TileType.PLAYER);
+                    _setAtCoord(player_X, player_Y, TileType.EMPTY);
+                    player_X = xPrime;
+                    player_Y = yPrime;
+                    _score += atNewSpot.getPointTotal();
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            switch (atNewSpot) {
+                case ENEMY:
                     EndGame("Player hit Enemy without firing at: " + Util.DisplayCoord(xPrime, yPrime));
                     _setAtCoord(player_X, player_Y, TileType.EMPTY);
                     player_X = -1;
                     player_Y = -1;
                     break;
-                } else {
-                    _score += atNewSpot.getPointTotal();
+                case COIN:
+                case DIRT:
+                case EMPTY:
                     _setAtCoord(xPrime, yPrime, TileType.PLAYER);
                     _setAtCoord(player_X, player_Y, TileType.EMPTY);
                     player_X = xPrime;
                     player_Y = yPrime;
-                    break;
-                }
-            case COIN:
-            case DIRT:
-                if (!isFiring)
                     _score += atNewSpot.getPointTotal();
-            case EMPTY:
-                if (!isFiring) {
-                    _setAtCoord(xPrime, yPrime, TileType.PLAYER);
-                    _setAtCoord(player_X, player_Y, TileType.EMPTY);
-                    player_X = xPrime;
-                    player_Y = yPrime;
                     break;
-                }
                 
-
-            default:
-                break;
+                default:
+                    break;
+            }
         }
+        
     }
 
     /**
@@ -443,6 +463,8 @@ public class WorldState implements IWorldState {
      *  Will not move if not empty or player
      */
     private void MoveEnemy(int x, int y) throws Exception {
+        if (_hasMoved[_getIndex(x, y, true)] == 1)
+            return;
 
         // Generate a random change
         //  in position
@@ -460,6 +482,7 @@ public class WorldState implements IWorldState {
             case EMPTY:
                 _setAtCoord(xPrime, yPrime, TileType.ENEMY);
                 _setAtCoord(x, y, TileType.EMPTY);
+                _hasMoved[_getIndex(xPrime, yPrime, true)] = 1;
                 break;
             case PLAYER:
                 _setAtCoord(xPrime,yPrime, TileType.ENEMY);
@@ -469,7 +492,12 @@ public class WorldState implements IWorldState {
         }
     }
 
+    /**
+     * Move the rock if empty space is beneath it
+     */
     private void MoveRock(int x, int y) throws Exception {
+        if (_hasMoved[_getIndex(x, y, true)] == 1)
+            return;
 
         // The new prime position
         int xPrime = x;
@@ -482,6 +510,7 @@ public class WorldState implements IWorldState {
             case EMPTY:
                 _setAtCoord(xPrime, yPrime, TileType.ROCK);
                 _setAtCoord(x, y, TileType.EMPTY);
+                _hasMoved[_getIndex(xPrime, yPrime, true)] = 1;
                 break;
             case PLAYER:
                 _setAtCoord(xPrime,yPrime, TileType.ROCK);

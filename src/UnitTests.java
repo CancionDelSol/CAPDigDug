@@ -1,3 +1,12 @@
+/**
+ * 
+ * @author Roger Johnson
+ *
+ * @date 4/24/2016
+ *
+ * @info Course COP4601
+ */
+ 
 import interfaces.*;
 import java.util.*;
 import java.nio.charset.*;

@@ -1,10 +1,21 @@
-/** Store some useful variables */
+/**
+ * 
+ * @author Roger Johnson
+ *
+ * @date 4/24/2016
+ *
+ * @info Course COP4601
+ */
+
+/** 
+ * Store some useful variables 
+ */
 public class Settings {
 
     //region DigDug inner game mechanics
     // Maximum allowed game length
-    public static long MAX_GAME_LENGTH = 100L;
-    public static long FRAME_INTERVAL = 25; 
+    public static long MAX_GAME_LENGTH = 1000L;
+    public static long FRAME_INTERVAL = 125; 
     public static int ENEMY_COUNT = 1;
     public static int COIN_COUNT = 1;
     public static int DIRT_COUNT = 5;
@@ -26,6 +37,6 @@ public class Settings {
     public static int NETWORK_OUTPUT_COUNT = 5; 
     public static int[] NETWORK_STRUCTURE = { NETWORK_INPUT_COUNT, 5, NETWORK_OUTPUT_COUNT};
     public static int DEFAULT_MAP_SIZE = 3;
-    public static double OUTPUT_FIRE_THRESHOLD = .25;
+    public static double OUTPUT_FIRE_THRESHOLD = .5;
 
 }

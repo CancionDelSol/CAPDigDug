@@ -1,3 +1,12 @@
+/**
+ * 
+ * @author Roger Johnson
+ *
+ * @date 4/24/2016
+ *
+ * @info Course COP4601
+ */
+ 
 public class Values {
 
     // These are used for tracking largest/smallest value
