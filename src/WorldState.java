@@ -583,6 +583,7 @@ public class WorldState implements IWorldState {
             case PLAYER:
                 _setAtCoord(xPrime,yPrime, TileType.ENEMY);
                 _setAtCoord(x, y, TileType.EMPTY);
+                _hasMoved[_getIndex(xPrime, yPrime, true)] = 1;
                 EndGame("Enemy attacked Player at: " + Util.DisplayCoord(xPrime, yPrime));
                 break;
         }
