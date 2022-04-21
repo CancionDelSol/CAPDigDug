@@ -66,3 +66,7 @@
 #     I realized towards the end that implementing this would take another few days due 
 #     to how complicated it would be so i opted to leave it out. Attempting to set the CLI flag
 #     will throw an error during program execution with a message to notify the user.
+
+
+# I have include a test network which fits the default network description
+#  it has been trained for a few hours, but could always use more training.
