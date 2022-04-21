@@ -17,16 +17,16 @@ JAVA_FILES := $(find . -name '*.java')
 #  This is the smallest network I've 
 #  had decent results with after training
 #  for an afternoon
-NET_STRUCT := 30:30:30
+NET_STRUCT := 15:15
 
 # Mutation rate for genetic algorithm
 #  This represents the range allowed 
 #  for a random adjustment to a parameter
-MUT_RATE := .5
+MUT_RATE := 1.0
 
 # Size of the map
 #  Defaults to 3
-MAP_SIZE := 18
+MAP_SIZE := 6
 
 # Population size
 POP_SIZE := 10
@@ -34,7 +34,7 @@ POP_SIZE := 10
 # Epochs per loop
 #  A new set of training worlds
 #  are generated between loops
-EPs := 10
+EPs := 100
 
 # Logging level
 LOG_LEVEL := DEBUG

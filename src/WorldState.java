@@ -20,6 +20,7 @@ public class WorldState implements IWorldState {
     //endregion
 
     //region Gameboard
+    private static final int FIRE_OUTPUT = 4;
     private String _message= "";
     private long _score = 0L;
     private boolean _isComplete = false;
@@ -28,6 +29,7 @@ public class WorldState implements IWorldState {
     private TileType[] _tiles;
     private List<TileType> _destroyed = new ArrayList<>();
     private int[] _hasMoved;
+    private int _curTileCount = 0;
 
     /** Return the player's score */
     public long getScore() {
@@ -43,19 +45,42 @@ public class WorldState implements IWorldState {
         return _message;
     }
 
-    /** Return the tile piece at a given coordinate */
+    /**
+     * Return the tile piece at a given coordinate
+     */
     private TileType GetTileType(int x, int y) throws Exception {
         int index = _getIndex(x, y, false);
         return index < 0 ? TileType.VOID : _tiles[index];
     }
 
+    /**
+     * Get the tile at the coordinate
+     * @param x X coordinate
+     * @param y Y coordinate
+     */
     private TileType _getAtCoord(int x, int y) throws Exception {
         return _tiles[_getIndex(x, y, true)];
     }
 
-    /** Set the tile type at a given coordinate */
+    /**
+     * Set the tile type at a given coordinate
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param tile The tile to put in the array
+     */
     private void _setAtCoord(int x, int y, TileType tile) throws Exception {
         _tiles[_getIndex(x, y, true)] = tile;
+
+        if (tile == TileType.EMPTY)
+            _curTileCount--;
+        else
+            _curTileCount++;
+
+        if (tile == TileType.PLAYER) {
+            player_X = x;
+            player_Y = y;
+        }
+
     }
 
     /** Return the index in the _values array */
@@ -93,9 +118,15 @@ public class WorldState implements IWorldState {
         _x = initializer._x;
         _y = initializer._y;
         _tiles = new TileType[_x * _y];
+        ClearBoard();
 
-        for (int i = 0; i < _tiles.length; i++) {
-            _tiles[i] = initializer._tiles[i];
+        player_X = initializer.player_X;
+        player_Y = initializer.player_Y;
+
+        for (int x = 0; x < _x; x++) {
+            for (int y = 0; y < _y; y++) {
+                _setAtCoord(x, y, initializer._getAtCoord(x, y));
+            }
         }
 
         _curTime = initializer._curTime;
@@ -165,7 +196,7 @@ public class WorldState implements IWorldState {
         //  3 : move down
         double threshold = Settings.OUTPUT_FIRE_THRESHOLD;
 
-        // Move left or right
+        // Delta coordinates
         int dX = 0, dY = 0;
         double highestVal = Values.VerySmall;
         int highestIndex = -1;
@@ -193,7 +224,15 @@ public class WorldState implements IWorldState {
             }
         }
         
-        MovePlayer(dX, dY, networkOutput[4] > threshold);
+        boolean isFiring = networkOutput[FIRE_OUTPUT] >= threshold;
+
+        if (isFiring)
+            _score--;
+        
+        if (_score < 0)
+            EndGame("Player ran out of score");
+
+        MovePlayer(dX, dY, isFiring);
 
         // Keep track of what has already been moved
         _hasMoved = new int[_tiles.length];
@@ -350,12 +389,12 @@ public class WorldState implements IWorldState {
 
     }
 
-    /** Randomize the game board */
+    /**
+     * Randomize the game board 
+     */
     private void RandomizeTiles() throws Exception {
-        List<TileType> queue = new ArrayList<>();
 
-        // Add player tile
-        queue.add(TileType.PLAYER);
+        List<TileType> queue = new ArrayList<>();
         
         // Add Enemy tiles
         AddTileToList(queue, TileType.ENEMY, Settings.ENEMY_COUNT);
@@ -370,23 +409,59 @@ public class WorldState implements IWorldState {
         AddTileToList(queue, TileType.DIRT, Settings.DIRT_COUNT);
 
         // Fill the rest with Empty
-        AddTileToList(queue, TileType.EMPTY, (Settings.MAP_SIZE * Settings.MAP_SIZE) - queue.size());   
+        AddTileToList(queue, TileType.EMPTY, (Settings.MAP_SIZE * Settings.MAP_SIZE) - queue.size());
+
+        // Clear the board  
+        ClearBoard();
 
         // Randomly pull from list and place into _tiles array
-        for (int x = 0; x < Settings.MAP_SIZE; x++) {
-            for (int y = 0; y < Settings.MAP_SIZE; y++) {
-                int randIndex = Util.RandInt(0, queue.size());
-                TileType pulled = queue.remove(randIndex);
+        for (TileType tile : queue) {
 
-                if (pulled == TileType.PLAYER) {
-                    player_X = x;
-                    player_Y = y;
-                }
-                _setAtCoord(x, y, pulled);
-            }
+            PlaceInRandomPosition(tile);
+        }
+
+        // Put the player in the center
+        int n = Settings.MAP_SIZE/2;
+        _setAtCoord(n + Util.RandInt(-1, 1), n + Util.RandInt(-1, 1), TileType.PLAYER);
+    }
+
+    /**
+     * Place the EMPTY tile in every position
+     */
+    private void ClearBoard() {
+        for (int i = 0; i < _tiles.length; i++) {
+            _tiles[i] = TileType.EMPTY;
         }
     }
 
+    /**
+     * Place the tile into a random EMPTY position in
+     *  the _tiles array
+     */
+    private void PlaceInRandomPosition(TileType tileType) throws Exception {
+        if (_curTileCount >= _tiles.length)
+            Logger.Throw("Shouldn't be able to add tiles");
+
+        int x = -1;
+        int y = -1;
+
+        TileType atCoord = TileType.VOID;
+        while (atCoord != TileType.EMPTY) {
+            x = Util.RandInt(0, Settings.MAP_SIZE);
+            y = Util.RandInt(0, Settings.MAP_SIZE);
+
+            atCoord = GetTileType(x, y);
+        }
+
+        _setAtCoord(x, y, tileType);
+    }
+
+    /**
+     * Simply add the tile to the list
+     * @param list The list to add the tile too
+     * @param tile The tile to add to the list
+     * @param count The number of times to add it to the list
+     */
     private void AddTileToList(List<TileType> list, TileType tile, int count) {
         for (int i = 0; i < count; i++) {
             list.add(tile);
@@ -400,35 +475,33 @@ public class WorldState implements IWorldState {
 
     }
 
-    private void MovePlayer(int x, int y, boolean isFiring) throws Exception {
-        int xPrime = player_X + x;
-        int yPrime = player_Y + y;
-
-        if (xPrime < 0 || xPrime >= Settings.MAP_SIZE)
-            xPrime = player_X;
+    /**
+     * Move the player piece by x and y
+     */
+    private void MovePlayer(int dx, int dy, boolean isFiring) throws Exception {
         
-        if (yPrime < 0 || yPrime >= Settings.MAP_SIZE)
-            yPrime = player_Y;
+        int xPrime = player_X + dx;
+        int yPrime = player_Y + dy;
+        int xInit = player_X;
+        int yInit = player_Y;
+
+        if (xPrime < 0 || xPrime >= _x)
+            xPrime = xInit;
+        
+        if (yPrime < 0 || yPrime >= _y)
+            yPrime = yInit;
 
         TileType atNewSpot = _getAtCoord(xPrime, yPrime);
 
         if (isFiring) {
             switch(atNewSpot) {
                 case ENEMY:
-                    _score += atNewSpot.getPointTotal();
-                    _setAtCoord(xPrime, yPrime, TileType.PLAYER);
-                    _setAtCoord(player_X, player_Y, TileType.EMPTY);
-                    player_X = xPrime;
-                    player_Y = yPrime;
-                    break;
                 case COIN:
                 case DIRT:
                 case EMPTY:
-                    _setAtCoord(xPrime, yPrime, TileType.PLAYER);
-                    _setAtCoord(player_X, player_Y, TileType.EMPTY);
-                    player_X = xPrime;
-                    player_Y = yPrime;
                     _score += atNewSpot.getPointTotal();
+                    _setAtCoord(xInit, yInit, TileType.EMPTY);
+                    _setAtCoord(xPrime, yPrime, TileType.PLAYER);
                     break;
                 default:
                     break;
@@ -437,18 +510,14 @@ public class WorldState implements IWorldState {
             switch (atNewSpot) {
                 case ENEMY:
                     EndGame("Player hit Enemy without firing at: " + Util.DisplayCoord(xPrime, yPrime));
-                    _setAtCoord(player_X, player_Y, TileType.EMPTY);
-                    player_X = -1;
-                    player_Y = -1;
+                    _setAtCoord(xInit, yInit, TileType.EMPTY);
                     break;
                 case COIN:
                 case DIRT:
                 case EMPTY:
-                    _setAtCoord(xPrime, yPrime, TileType.PLAYER);
-                    _setAtCoord(player_X, player_Y, TileType.EMPTY);
-                    player_X = xPrime;
-                    player_Y = yPrime;
                     _score += atNewSpot.getPointTotal();
+                    _setAtCoord(xPrime, yPrime, TileType.PLAYER);
+                    _setAtCoord(xInit, yInit, TileType.EMPTY);
                     break;
                 
                 default:

@@ -1,5 +1,6 @@
 /**
- * 
+ * Perceptron class, inherites from XmlBase
+ *  in order to get Xml representation
  * @author Roger Johnson
  *
  * @date 4/24/2016
@@ -15,6 +16,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+/**
+ */
 public class Perceptron extends XmlBase implements IPerceptron, IGenetic {
     //region Constants
     private static double RATE = .001;
