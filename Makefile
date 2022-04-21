@@ -17,7 +17,7 @@ JAVA_FILES := $(find . -name '*.java')
 #  This is the smallest network I've 
 #  had decent results with after training
 #  for an afternoon
-NET_STRUCT := 15:15
+NET_STRUCT := 75:75
 
 # Mutation rate for genetic algorithm
 #  This represents the range allowed 
