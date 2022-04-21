@@ -37,6 +37,6 @@ public class Settings {
     public static int NETWORK_OUTPUT_COUNT = 5; 
     public static int[] NETWORK_STRUCTURE = { NETWORK_INPUT_COUNT, 5, NETWORK_OUTPUT_COUNT};
     public static int DEFAULT_MAP_SIZE = 3;
-    public static double OUTPUT_FIRE_THRESHOLD = .5;
+    public static double OUTPUT_FIRE_THRESHOLD = .75;
 
 }

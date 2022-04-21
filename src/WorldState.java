@@ -227,12 +227,6 @@ public class WorldState implements IWorldState {
         
         boolean isFiring = networkOutput[FIRE_OUTPUT] >= threshold;
 
-        if (isFiring)
-            _score--;
-        
-        if (_score < 0)
-            _score = 1;
-
         MovePlayer(dX, dY, isFiring);
 
         // Keep track of what has already been moved
@@ -504,27 +498,47 @@ public class WorldState implements IWorldState {
 
         TileType atNewSpot = _getAtCoord(xPrime, yPrime);
 
+        // Can't move while firing
         if (isFiring) {
             switch(atNewSpot) {
+                // Remove enemy, increment score
                 case ENEMY:
+                    _score += atNewSpot.getPointTotal();
+                    _setAtCoord(xPrime, yPrime, TileType.EMPTY);
+                    break;
                 case COIN:
                 case DIRT:
                 case EMPTY:
-                    _score += atNewSpot.getPointTotal();
-                    _setAtCoord(xInit, yInit, TileType.EMPTY);
-                    _setAtCoord(xPrime, yPrime, TileType.PLAYER);
+                    // _score += atNewSpot.getPointTotal();
+                    // _setAtCoord(xInit, yInit, TileType.EMPTY);
+                    // _setAtCoord(xPrime, yPrime, TileType.PLAYER);
                     break;
                 default:
                     break;
             }
         } else {
             switch (atNewSpot) {
+                // Player dies
                 case ENEMY:
                     EndGame("Player hit Enemy without firing at: " + Util.DisplayCoord(xPrime, yPrime));
                     _setAtCoord(xInit, yInit, TileType.EMPTY);
                     break;
+
+                // Move player into spot with coin, increment score
                 case COIN:
+                    _score += atNewSpot.getPointTotal();
+                    _setAtCoord(xPrime, yPrime, TileType.PLAYER);
+                    _setAtCoord(xInit, yInit, TileType.EMPTY);
+                    break;
+
+                // Dig out new spot, don't move player yet, increment score
                 case DIRT:
+                    _score += atNewSpot.getPointTotal();
+                    _setAtCoord(xPrime, yPrime, TileType.PLAYER);
+                    _setAtCoord(xInit, yInit, TileType.EMPTY);
+                    break;
+
+                // Move player into empty spot
                 case EMPTY:
                     _score += atNewSpot.getPointTotal();
                     _setAtCoord(xPrime, yPrime, TileType.PLAYER);

@@ -339,6 +339,7 @@ public class Program {
                 }
                 Logger.Gui("Game complete: " + ((WorldState)map).getMessage());
                 ((WorldState)map).Display();
+                Thread.sleep(2000);
                 _cachedNetwork = null;
             }
             
