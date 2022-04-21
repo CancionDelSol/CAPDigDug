@@ -1,5 +1,6 @@
 /**
- * 
+ * World state class. 
+ *  The DigDug Gameboard
  * @author Roger Johnson
  *
  * @date 4/24/2016
@@ -230,7 +231,7 @@ public class WorldState implements IWorldState {
             _score--;
         
         if (_score < 0)
-            EndGame("Player ran out of score");
+            _score = 1;
 
         MovePlayer(dX, dY, isFiring);
 
@@ -382,10 +383,21 @@ public class WorldState implements IWorldState {
             }
         }
         int curIndex = inArray * perTile;
-        _encodedState[curIndex] = Math.sin(_curTime * Values.PI/16.0);
-        _encodedState[curIndex + 1] = Math.sin(_curTime * Values.PI/8.0);
-        _encodedState[curIndex + 2] = Math.sin(_curTime * Values.PI/4.0);
-        _encodedState[curIndex + 3] = Math.sin(_curTime * Values.PI/2.0);
+
+        // Using harmonic values as inputs 
+        //  will prevent the agent from being
+        //  "locked" in place due to no changes
+        //  in the environment within the Agents'
+        //  FOV
+        double a, b, c, d;
+        a = Math.sin(_curTime * Values.PI/16.0);
+        b = Math.sin(_curTime * Values.PI/8.0);
+        c = Math.sin(_curTime * Values.PI/4.0);
+        d = Math.sin(_curTime * Values.PI/2.0);
+        _encodedState[curIndex] = a * a;
+        _encodedState[curIndex + 1] = b * b;
+        _encodedState[curIndex + 2] = c * c;
+        _encodedState[curIndex + 3] = d * d;
 
     }
 
@@ -416,7 +428,6 @@ public class WorldState implements IWorldState {
 
         // Randomly pull from list and place into _tiles array
         for (TileType tile : queue) {
-
             PlaceInRandomPosition(tile);
         }
 
@@ -536,9 +547,11 @@ public class WorldState implements IWorldState {
             return;
 
         // Generate a random change
-        //  in position
-        int dX = Util.RandInt(-1, 1);
-        int dY = Util.RandInt(-1, 1);
+        //  in position. The rng does
+        //  not include the last number
+        //  so make the range -1 - 2
+        int dX = Util.RandInt(-1, 2);
+        int dY = Util.RandInt(-1, 2);
 
         // The new prime position
         int xPrime = x + dX;
@@ -577,6 +590,11 @@ public class WorldState implements IWorldState {
 
         switch (atNewPos) {
             case EMPTY:
+                _setAtCoord(xPrime, yPrime, TileType.ROCK);
+                _setAtCoord(x, y, TileType.EMPTY);
+                _hasMoved[_getIndex(xPrime, yPrime, true)] = 1;
+                break;
+            case ENEMY:
                 _setAtCoord(xPrime, yPrime, TileType.ROCK);
                 _setAtCoord(x, y, TileType.EMPTY);
                 _hasMoved[_getIndex(xPrime, yPrime, true)] = 1;

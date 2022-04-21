@@ -1,5 +1,9 @@
 /**
- * 
+ * Entry point for the DigDug application
+ *  Three different types of runtimes:
+ *    - Debug (UNITTEST) runs the unit tests
+ *    - GenAlg (GENETICALG) runs the genetic algorithm
+ *    - Live (LIVERUN) runs the network saved on disk in real time
  * @author Roger Johnson
  *
  * @date 4/24/2016
@@ -319,21 +323,25 @@ public class Program {
         Logger.Gui("Running AI playthrough");
         try {
 
-            IPerceptron network = getNetwork();
-            IAgent agent = new DigAgent(network);
+            while (true) {
+                IPerceptron network = getNetwork();
+                IAgent agent = new DigAgent(network);
 
-            IWorldState map = new WorldState(Settings.MAP_SIZE, Settings.MAP_SIZE);
+                IWorldState map = new WorldState(Settings.MAP_SIZE, Settings.MAP_SIZE);
 
-            while (!map.getIsComplete()) {
+                while (!map.getIsComplete()) {
+                    ((WorldState)map).Display();
+                    IDeltaWorldState action = agent.GetAction(map);
+                    Logger.Gui("Score: " + ((WorldState)map).getScore() + " | Time: " + map.getTime());
+                    Logger.Debug("Action: " + Util.DisplayArray(action.getDeltaEncoding()));
+                    map.ApplyDelta(action);
+                    Thread.sleep(Settings.FRAME_INTERVAL);
+                }
+                Logger.Gui("Game complete: " + ((WorldState)map).getMessage());
                 ((WorldState)map).Display();
-                IDeltaWorldState action = agent.GetAction(map);
-                Logger.Gui("Score: " + ((WorldState)map).getScore() + " | Time: " + map.getTime());
-                Logger.Debug("Action: " + Util.DisplayArray(action.getDeltaEncoding()));
-                map.ApplyDelta(action);
-                Thread.sleep(Settings.FRAME_INTERVAL);
+                _cachedNetwork = null;
             }
-            Logger.Gui("Game complete: " + ((WorldState)map).getMessage());
-            ((WorldState)map).Display();
+            
         } catch (Exception exc) {
             Logger.Throw("Exception during AI runthrough: " + exc.getMessage());
         }
@@ -358,10 +366,9 @@ public class Program {
 
                 // Scale up the defaults 1x1
                 double ratio = mapSq/defMapSq;
-                Settings.ROCK_COUNT *= ratio;
                 Settings.DIRT_COUNT *= ratio;
                 Settings.COIN_COUNT *= ratio;
-                Settings.ENEMY_COUNT *= ratio;
+                Settings.ENEMY_COUNT = ((int)ratio)/2;
                 break;
         }
 

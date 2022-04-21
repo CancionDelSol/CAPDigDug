@@ -14,7 +14,7 @@ public class Settings {
 
     //region DigDug inner game mechanics
     // Maximum allowed game length
-    public static long MAX_GAME_LENGTH = 1000L;
+    public static long MAX_GAME_LENGTH = 250L;
     public static long FRAME_INTERVAL = 125; 
     public static int ENEMY_COUNT = 1;
     public static int COIN_COUNT = 1;

@@ -22,11 +22,11 @@ NET_STRUCT := 15:15
 # Mutation rate for genetic algorithm
 #  This represents the range allowed 
 #  for a random adjustment to a parameter
-MUT_RATE := 1.0
+MUT_RATE := .25
 
 # Size of the map
 #  Defaults to 3
-MAP_SIZE := 6
+MAP_SIZE := 9
 
 # Population size
 POP_SIZE := 10
